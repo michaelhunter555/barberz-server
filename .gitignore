@@ -1,0 +1,41 @@
+# Node modules
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+
+# OS files
+.DS_Store  # macOS
+Thumbs.db  # Windows
+
+# npm package lock
+package-lock.json
+
+# Build output
+/dist
+/build
+
+# Dependency directories
+/bower_components
+
+# Temporary directories for certain IDEs
+.vscode/
+.idea/
+
+# npm debug log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional: coverage directory if you are using testing tools
+/coverage
+
+# Optional: .env.local (for specific local configurations)
+.env.local
+
+# Optional: server-specific config (you may want to add these if you're managing a production server)
+/*.pem   # Private keys or certificates
