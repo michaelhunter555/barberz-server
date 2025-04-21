@@ -1,19 +1,12 @@
-import express, { Request, Response} from 'express';
+import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import userRoutes from './routes/user/userRoutes';
-// import { ExpressAuth } from "@auth/express";
-// import Google from '@auth/express/providers/google';
-// import { authConfig } from './lib/config/auth.config';
-// import { currentSession, authenticatedUser } from './lib/config/authmiddleware';
 
 dotenv.config();
 const app = express();
 app.use(cors());
-// app.set("trust proxy", true);
-// app.use(currentSession);
-// app.use("/auth/*", ExpressAuth(authConfig));
 
 app.use((req, res, next) => {
   if (req.originalUrl === "/api/plans/stripe-webhook") {

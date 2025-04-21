@@ -32,6 +32,7 @@ if(checkIsBarber(user)) {
 }
 return {
     name: user.name,
+    email: user.email,
     image: user.image,
     geolocation: user.geoLocation,
     location: user.location,

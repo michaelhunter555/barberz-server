@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import Barber from '../../models/Barber';
-import { type TUserQueryProps } from '../../types';
+import Barber from '../../../models/Barber';
+import { type TUserQueryProps } from '../../../types';
 
 const getUsers = async (req: Request, res: Response) => {
     const { page, limit, location, price, hours, } = req.query;

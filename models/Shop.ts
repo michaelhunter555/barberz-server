@@ -8,6 +8,7 @@ interface IBarberShops extends mongoose.Document {
     ownerName: string;
     reviews: mongoose.Types.ObjectId;
     transactions: mongoose.Types.ObjectId;
+    employees: [mongoose.Schema.Types.ObjectId]
     // promos: Promotions
 }
 
@@ -18,7 +19,8 @@ const ShopSchema = new mongoose.Schema<IBarberShops>({
     ownerId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "Barber" },
     ownerName: { type: String, required: true, default: ""},
     reviews: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "Review"},
-    transactions: { type: mongoose.Schema.Types.ObjectId, required: false, default: "none yet"}
+    transactions: { type: mongoose.Schema.Types.ObjectId, required: false, default: "none yet"},
+    employees: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Barber'}]
 });
 
 export default mongoose.models.Shop || mongoose.model<IBarberShops>("Shop", ShopSchema);

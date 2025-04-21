@@ -156,9 +156,9 @@ export const authConfig: ExpressAuthConfig = {
                     session.user.startingPrice = token.startingPrice;
                 }
     
-                if (token.hours && typeof token.hours === 'string') {
-                    session.user.hours = token.hours;
-                }
+                // if (token.hours && typeof token.hours === 'array') {
+                //     session.user.hours = token.hours;
+                // }
     
                 if (token.avgReviewScore && typeof token.avgReviewScore === "number") {
                     session.user.avgReviewScore = token.avgReviewScore;
