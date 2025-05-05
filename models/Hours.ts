@@ -7,7 +7,8 @@ export interface IHourSlot  {
     startTime: THourSlot, 
     endTime: THourSlot, 
     price: number, 
-    isBooked: boolean; }
+    isBooked: boolean; 
+}
 
 export interface IHours extends mongoose.Document {
         barberId:  mongoose.Schema.Types.ObjectId;

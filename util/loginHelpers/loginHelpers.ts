@@ -34,7 +34,7 @@ return {
     name: user.name,
     email: user.email,
     image: user.image,
-    geolocation: user.geoLocation,
+    geoLocation: user.geoLocation,
     location: user.location,
     userIsLive: user.userIsLive,
     transactions: user.transactions ?? [],
