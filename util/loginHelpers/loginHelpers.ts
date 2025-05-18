@@ -7,6 +7,8 @@ return user.accountType === "barber";
 export const getAccountDetails = (user: IBarber) => {
 if(checkIsBarber(user)) {
     return {
+            id: user._id,
+            accountType: user.accountType,
             name: user.name,
             email: user.email,
             image: user.image,
@@ -31,6 +33,8 @@ if(checkIsBarber(user)) {
         }
 }
 return {
+    id: user._id,
+    accountType: user.accountType,
     name: user.name,
     email: user.email,
     image: user.image,
