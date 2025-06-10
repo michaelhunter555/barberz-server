@@ -13,7 +13,7 @@ export interface IJoinAgreements extends mongoose.Document {
     termsApproved: boolean;
 };
 
-const JoinAgreementSchema = new mongoose.Schema({
+const JoinAgreementSchema = new mongoose.Schema<IJoinAgreements>({
     userId: { type: String, required: true, },
     email: { type: String, required: true,},
     name: { type: String, required: true, },

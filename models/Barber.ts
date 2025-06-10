@@ -7,10 +7,23 @@ export type Services = {
 };
 
 export type Status = 'Available' | "Busy" | "Away";
+export type LicenseInfo = {
+  name: string;
+  city: string;
+  state: string;
+  zip: number;
+  expiration: string | Date;
+  category: string;
+  registrationNumber: number;
+}
 
 export interface IBarber extends mongoose.Document {
     name: string;
     email: string;
+    isVerified?: boolean;
+    userLicense?: LicenseInfo;
+    myBookings?: mongoose.Types.ObjectId[];
+    userHasActiveBooking?: boolean;
     image?: string;
     imageOne?: string;
     imageTwo?: string;
@@ -23,6 +36,7 @@ export interface IBarber extends mongoose.Document {
         coordinates: [number, number]; // [longitude, latitude]
       };
     location?: string;
+    isVisible?: boolean;
     userIsLive?: boolean;
     shopName?: string;
     services?: Services[] | [];
@@ -38,12 +52,25 @@ export interface IBarber extends mongoose.Document {
     customerBookings?: mongoose.Types.ObjectId[];
     hasActiveDeal?: boolean;
     accountType?: 'user' | 'barber',
-    shops?: mongoose.Types.ObjectId[]
+    shops?: mongoose.Types.ObjectId[];
+    coupons?: mongoose.Types.ObjectId[];
+    myCoupons?: mongoose.Types.ObjectId[];
 };
 
 const BarberSchema = new mongoose.Schema<IBarber>({
     name: { type: String, required: true },
     email: { type: String, required: true },
+    isVerified: { type: Boolean, required: true, default: false },
+    isVisible: { type: Boolean, required: true, default: false,},
+    userLicense: {
+      name: { type: String, required: true, },
+      state: { type: String, required: true, },
+      city: { type: String, required: true, },
+      zip: { type: Number, required: true, },
+      expiration: { type: String, required: true,},
+      category: { type: String, required: true, },
+      registrationNumber: { type: Number, required: true,}
+    },
     image: { type: String, required: true },
     imageOne: { type: String, required: false },
     imageTwo: { type: String, required: false },
@@ -73,13 +100,16 @@ const BarberSchema = new mongoose.Schema<IBarber>({
     hours:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Hour'}],
     avgReviewScore: { type: Number, required: true, default: 0 },
     totalReviews: { type: Number, required: true, default: 0 },
-    reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
-    transactions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
+    reviews: [{ type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Review' }],
+    transactions: [{ type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Transaction' }],
+    myBookings: [{ type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Booking'}],
     requestedBooking: { type: Number, required: true, default: 0 },
-    customerBookings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Booking' }],
+    customerBookings: [{ type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Booking' }],
     hasActiveDeal: { type: Boolean, required: true, default: false },
-    shops: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Shop'}]
-});
+    shops: [{ type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Shop'}],
+    coupons: [{ type: mongoose.Schema.Types.ObjectId, required: false, ref: "Coupon"}],
+    myCoupons: [{ type: mongoose.Schema.Types.ObjectId, required: false, ref: "Coupon"}]
+}, { timestamps: true });
 
 BarberSchema.index({ geoLocation: '2dsphere' });
 

@@ -9,6 +9,10 @@ export default async function(req: Request, res: Response) {
 
     const user = await findUserById(String(id), res);
 
+    if(!user) {
+        return void res.status(404).json({ error: 'No user found for that id.', ok: false })
+    }
+
     try {
         const newService = new Services({
             barberId: user._id,
