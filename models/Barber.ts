@@ -39,7 +39,7 @@ export interface IBarber extends mongoose.Document {
     isVisible?: boolean;
     userIsLive?: boolean;
     shopName?: string;
-    services?: Services[] | [];
+    services?: mongoose.Types.ObjectId[]
     isAvailable?: boolean;
     status?: Status;
     startingPrice?: number;
@@ -93,7 +93,7 @@ const BarberSchema = new mongoose.Schema<IBarber>({
     location: { type: String, required: false, },
     userIsLive: { type: Boolean, required: true, default: false },
     shopName: { type: String, required: false },
-    services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service'}],
+    services: { type: mongoose.Schema.Types.ObjectId, ref: 'Service'},
     isAvailable: { type: Boolean, required: true, default: true },
     status: { type: String, enum: ['Available', 'Busy', 'Away'], required: true, default: "Busy" },
     startingPrice: { type: Number, required: false, default: 0 },

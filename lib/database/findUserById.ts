@@ -1,7 +1,7 @@
 import { Response } from 'express';
-import User from '../../models/Barber';
+import User, { IBarber } from '../../models/Barber';
 
-export const findUserById = async (id: number | string, res: Response) => {
+export const findUserById = async (id: number | string, res: Response): Promise<IBarber | undefined> => {
     try {
         const user = await User.findById(id);
         if(!user) {
