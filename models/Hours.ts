@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 
 type THourSlot = { value: number; hour: number; minute: number };
 
-export interface IDaySlot {  
+export interface IDaySlot { 
+    _id?: mongoose.Types.ObjectId, 
     startTime: THourSlot, 
     endTime: THourSlot, 
     price: number, 
@@ -22,7 +23,7 @@ const TimeSchema = new mongoose.Schema<THourSlot>({
     hour: { type: Number, required: true },
     minute: { type: Number, required: true, enum: [0, 15, 30, 45] },
     value: { type: Number, required: true },
-  });
+  }, { _id: false });
 
   const DaySlotSchema = new mongoose.Schema<IDaySlot>({
     startTime: { type: TimeSchema, required: true },
@@ -32,14 +33,14 @@ const TimeSchema = new mongoose.Schema<THourSlot>({
   });
 
   const ScheduleSchema = new mongoose.Schema<IScheduleByDay>({
-    Monday: [DaySlotSchema],
-    Tuesday: [DaySlotSchema],
-    Wednesday: [DaySlotSchema],
-    Thursday: [DaySlotSchema],
-    Friday: [DaySlotSchema],
-    Saturday: [DaySlotSchema],
-    Sunday: [DaySlotSchema],
-  });
+    monday: [DaySlotSchema],
+    tuesday: [DaySlotSchema],
+    wednesday: [DaySlotSchema],
+    thursday: [DaySlotSchema],
+    friday: [DaySlotSchema],
+    saturday: [DaySlotSchema],
+    sunday: [DaySlotSchema],
+  }, { _id: false });
 
 const HoursSchema = new mongoose.Schema<IHours>({
     barberId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Barber'},

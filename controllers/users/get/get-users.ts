@@ -15,7 +15,7 @@ const getUsers = async (req: Request, res: Response) => {
     try {
         const barbers = await Barber.find(userQuery)
         .populate({
-            path:"User",
+            path:"Barber",
             select: "_id "
         }).skip((pageNum - 1) * limitNum).limit(limitNum);
 

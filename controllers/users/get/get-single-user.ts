@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import User, { IBarber } from "../../../models/Barber";
+import User from "../../../models/Barber";
 import { getAccountDetails } from '../../../util/loginHelpers/loginHelpers';
 
 export default async function(req: Request, res: Response) {
@@ -22,7 +22,7 @@ export default async function(req: Request, res: Response) {
             }
             user = new User(newUser);
             await user.save();
-        }
+        };
 
         const userData = getAccountDetails(user);
         res.status(200).json({ userData, ok: true });
