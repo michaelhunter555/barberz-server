@@ -9,11 +9,15 @@ import getAddOns from "../../controllers/barbers/get/get-add-on";
 import createService from "../../controllers/barbers/create/create-service";
 import deleteService from "../../controllers/barbers/delete/delete-service";
 import updateService from "../../controllers/barbers/update/update-service";
+import getSchedule from "../../controllers/barbers/get/get-schedule";
+import addTimeSlot from "../../controllers/barbers/create/add-time-slot";
 
 const router = Router();
 
 router.get("/get-coupons", getCoupons);
 router.get("/get-add-ons", getAddOns);
+router.get("/get-schedule", getSchedule);
+router.post("/add-time-slot", addTimeSlot);
 router.post("/create-add-on", createService);
 router.post("/update-add-on", updateService);
 router.post("/update-starting-price", updateStartingPrice);

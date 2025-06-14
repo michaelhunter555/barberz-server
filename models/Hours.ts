@@ -8,6 +8,7 @@ export interface IDaySlot {
     endTime: THourSlot, 
     price: number, 
     isBooked: boolean; 
+    isChecked?: boolean;
 }
 
 export interface IScheduleByDay {

@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { findUserById } from '../../../lib/database/findUserById';
 import Hours from '../../../models/Hours';
 
 export default async function(req: Request, res: Response) {
     const { barberId } = req.query;
+    console.log("barberID schedule:", barberId);
 
     if(!barberId) {
         return void res.status(400).json({ error: 'The id is undefined.', ok: false })
@@ -31,6 +31,7 @@ export default async function(req: Request, res: Response) {
         }
         res.status(200).json({ schedule: schedule.schedule, ok: true })
     } catch(err) {
+        console.log("get schedule error", err);
         res.status(500).json({ error: 'Error getting your schedule.', ok: false })
     }
 }
