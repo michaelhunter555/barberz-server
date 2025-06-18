@@ -31,6 +31,7 @@ const TimeSchema = new mongoose.Schema<THourSlot>({
     endTime: { type: TimeSchema, required: true },
     price: { type: Number, required: true },
     isBooked: { type: Boolean, default: false },
+    isChecked: { type: Boolean, default: false }
   });
 
   const ScheduleSchema = new mongoose.Schema<IScheduleByDay>({

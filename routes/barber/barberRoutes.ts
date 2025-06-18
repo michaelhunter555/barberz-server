@@ -11,12 +11,17 @@ import deleteService from "../../controllers/barbers/delete/delete-service";
 import updateService from "../../controllers/barbers/update/update-service";
 import getSchedule from "../../controllers/barbers/get/get-schedule";
 import addTimeSlot from "../../controllers/barbers/create/add-time-slot";
+import updateSingleTimeslot from "../../controllers/barbers/update/update-single-timeslot";
+import deleteTimeSlot from "../../controllers/barbers/delete/delete-time-slot";
+import clearSchedule from "../../controllers/barbers/delete/clear-schedule";
 
 const router = Router();
 
 router.get("/get-coupons", getCoupons);
 router.get("/get-add-ons", getAddOns);
 router.get("/get-schedule", getSchedule);
+router.post("/clear-schedule", clearSchedule);
+router.post("/edit-time-slot", updateSingleTimeslot)
 router.post("/add-time-slot", addTimeSlot);
 router.post("/create-add-on", createService);
 router.post("/update-add-on", updateService);
@@ -26,5 +31,6 @@ router.post("/create-coupon", createCoupon);
 router.post("/edit-coupon", editCoupon);
 router.delete("/delete-coupon", deleteCoupon);
 router.delete("/delete-add-on", deleteService);
+router.delete("/delete-time-slot", deleteTimeSlot);
 
 export default router;

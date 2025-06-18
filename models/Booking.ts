@@ -5,6 +5,7 @@ interface IBookings extends mongoose.Document {
     barberId: mongoose.Types.ObjectId; // ref: Barbers
     bookingDateAndTime: string;
     bookingLocation: string;
+    isConfirmed: boolean;
     addOns: string[];
     price: number;
     discount?: number;
@@ -28,6 +29,11 @@ const BookingSchema = new mongoose.Schema<IBookings>({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Barbers",
         required: true,
+    },
+    isConfirmed: {
+        type: Boolean,
+        required: true,
+        default: false,
     },
     bookingDateAndTime: {
         type: String,

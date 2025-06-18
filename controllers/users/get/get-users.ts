@@ -9,7 +9,7 @@ const getUsers = async (req: Request, res: Response) => {
 
     const userQuery: TUserQueryProps = {location: ""};
     if(location) userQuery.location = String(location);
-    if(price) userQuery.price = Number(price);
+    if(price) userQuery.startingPrice = Number(price);
     if(hours) userQuery.hours = String(hours)
 
     try {

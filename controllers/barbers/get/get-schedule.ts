@@ -3,8 +3,6 @@ import Hours from '../../../models/Hours';
 
 export default async function(req: Request, res: Response) {
     const { barberId } = req.query;
-    console.log("barberID schedule:", barberId);
-
     if(!barberId) {
         return void res.status(400).json({ error: 'The id is undefined.', ok: false })
     }

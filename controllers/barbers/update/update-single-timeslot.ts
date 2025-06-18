@@ -7,37 +7,37 @@ export default async function(req: Request, res: Response) {
     const { timeSlotId, day, daySlot } = req.body;
 
     if (!barberId) {
-        return res.status(400).json({ error: 'The id is undefined.', ok: false });
+        return void res.status(400).json({ error: 'The id is undefined.', ok: false });
     }
 
     try {
         const schedule = await Hours.findOne({ barberId: String(barberId) });
         if (!schedule) {
-            return res.status(404).json({ error: 'No schedule found for the barberId.', ok: false });
+            return void res.status(404).json({ error: 'No schedule found for the barberId.', ok: false });
         }
 
         const daySlots = schedule.schedule[day];
         if (!Array.isArray(daySlots)) {
-            return res.status(400).json({ error: `Invalid day: ${day}`, ok: false });
+            return void res.status(400).json({ error: `Invalid day: ${day}`, ok: false });
         }
 
         const index = daySlots.findIndex(slot => slot._id?.toString() === timeSlotId);
         if (index === -1) {
-            return res.status(404).json({ error: 'Time slot not found.', ok: false });
+            return void res.status(404).json({ error: 'Time slot not found.', ok: false });
         }
 
         daySlots[index].startTime = {
-            value: daySlot.value,
-            hour: daySlot.startHour,
-            minute: daySlot.startMinute,
+            value: daySlot.startTime.value,
+            hour: daySlot.startTime.hour,
+            minute: daySlot.startTime.minute,
         };
 
         daySlots[index].endTime = {
-            value: daySlot.value,
-            hour: daySlot.endHour,
-            minute: daySlot.endMinute,
+            value: daySlot.endTime.value,
+            hour: daySlot.endTime.hour,
+            minute: daySlot.endTime.minute,
         };
-
+        
         schedule.markModified(`schedule.${day}`);
         await schedule.save();
 
@@ -45,6 +45,6 @@ export default async function(req: Request, res: Response) {
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Error getting your schedule.', ok: false });
+        res.status(500).json({ error: 'Error updating your schedule.', ok: false });
     }
 }

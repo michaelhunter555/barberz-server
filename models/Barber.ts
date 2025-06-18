@@ -20,6 +20,7 @@ export type LicenseInfo = {
 export interface IBarber extends mongoose.Document {
     name: string;
     email: string;
+    bio?: string;
     isVerified?: boolean;
     userLicense?: LicenseInfo;
     myBookings?: mongoose.Types.ObjectId[];
@@ -60,6 +61,7 @@ export interface IBarber extends mongoose.Document {
 const BarberSchema = new mongoose.Schema<IBarber>({
     name: { type: String, required: true },
     email: { type: String, required: true },
+    bio: { type: String, required: false,},
     isVerified: { type: Boolean, required: true, default: false },
     isVisible: { type: Boolean, required: true, default: false,},
     userLicense: {
@@ -93,7 +95,7 @@ const BarberSchema = new mongoose.Schema<IBarber>({
     location: { type: String, required: false, },
     userIsLive: { type: Boolean, required: true, default: false },
     shopName: { type: String, required: false },
-    services: { type: mongoose.Schema.Types.ObjectId, ref: 'Service'},
+    services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: false }],
     isAvailable: { type: Boolean, required: true, default: true },
     status: { type: String, enum: ['Available', 'Busy', 'Away'], required: true, default: "Busy" },
     startingPrice: { type: Number, required: false, default: 0 },
