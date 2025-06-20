@@ -25,10 +25,10 @@ const getBarbers = async (req: Request, res: Response) => {
     if(price) userQuery.startingPrice = Number(price);
     if(hours) userQuery.hours = String(hours);
 
-
     try {
         const barbers = await Barber.find({
            accountType: 'barber',
+           isVisible: true,
             geoLocation: {
                 $near: {
                     $geometry: {
@@ -39,6 +39,10 @@ const getBarbers = async (req: Request, res: Response) => {
                 }
             }
         })
+        .populate({
+            path: "coupons",
+            model: "Coupon",
+        })
         .skip((pageNum - 1) * limitNum).limit(limitNum);
 
         if(!barbers) {
@@ -47,8 +51,6 @@ const getBarbers = async (req: Request, res: Response) => {
 
         const totalBarbers = await Barber.countDocuments(userQuery);
 
-        console.log("Barbers: ", barbers)
-        
         res.status(200).json({ 
             barbers, 
             currentPage: page, 

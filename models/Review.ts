@@ -26,4 +26,4 @@ const ReviewSchema = new mongoose.Schema<Reviews>({
     feedbackImage3: { type: String, required: false },
 });
 
-export default mongoose.models.Review || mongoose.model<Reviews>("Reviw", ReviewSchema);
+export default mongoose.models.Review || mongoose.model<Reviews>("Review", ReviewSchema);

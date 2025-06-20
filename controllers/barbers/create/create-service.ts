@@ -21,6 +21,8 @@ export default async function(req: Request, res: Response) {
                 services: [service]
             })
              await newService.save();
+             user.services?.push(newService._id);
+             await user.save();
         } else {
             currService.services.push(service);
             await currService.save();

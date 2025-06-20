@@ -4,6 +4,7 @@ import { findUserById } from '../../../lib/database/findUserById';
 export default async function(req: Request, res: Response) {
     const { id, newPrice } = req.body;
 
+    // need to update all the prices for schedules slots!!!
     try {
         const barber = await findUserById(String(id), res);
         if(!barber) {
