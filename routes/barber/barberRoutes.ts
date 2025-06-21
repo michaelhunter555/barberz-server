@@ -14,12 +14,14 @@ import addTimeSlot from "../../controllers/barbers/create/add-time-slot";
 import updateSingleTimeslot from "../../controllers/barbers/update/update-single-timeslot";
 import deleteTimeSlot from "../../controllers/barbers/delete/delete-time-slot";
 import clearSchedule from "../../controllers/barbers/delete/clear-schedule";
+import updateUserBio from "../../controllers/barbers/update/update-user-bio";
 
 const router = Router();
 
 router.get("/get-coupons", getCoupons);
 router.get("/get-add-ons", getAddOns);
 router.get("/get-schedule", getSchedule);
+router.post("/update-bio", updateUserBio);
 router.post("/clear-schedule", clearSchedule);
 router.post("/edit-time-slot", updateSingleTimeslot)
 router.post("/add-time-slot", addTimeSlot);
