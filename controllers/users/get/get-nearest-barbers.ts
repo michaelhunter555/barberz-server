@@ -14,7 +14,6 @@ const getBarbers = async (req: Request, res: Response) => {
         price, 
         hours, 
     } = req.query;
-    console.log(req.query);
     
     const pageNum = parseInt(String(page), 10) || 1;
     const limitNum = parseInt(String(limit), 10) || 25;

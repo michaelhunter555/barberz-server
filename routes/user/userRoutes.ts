@@ -4,6 +4,7 @@ import updateGeolocation from '../../controllers/users/update/update-geolocation
 import joinAsBarber from '../../controllers/users/update/join-as-barber';
 import getNearestBarber from '../../controllers/users/get/get-nearest-barbers'
 import getSelectedBarber from '../../controllers/users/get/get-selected-barber';
+import createBookingRequest from '../../controllers/users/create/create-booking-request';
 
 const router = Router();
 
@@ -12,5 +13,6 @@ router.get("/get-one-barber", getSelectedBarber);
 router.post("/update-coordinates", updateGeolocation);
 router.post("/get-user-account", getSingleUser);
 router.post("/join-as-barber", joinAsBarber);
+router.post("/send-booking-request", createBookingRequest);
 
 export default router;

@@ -15,13 +15,22 @@ import updateSingleTimeslot from "../../controllers/barbers/update/update-single
 import deleteTimeSlot from "../../controllers/barbers/delete/delete-time-slot";
 import clearSchedule from "../../controllers/barbers/delete/clear-schedule";
 import updateUserBio from "../../controllers/barbers/update/update-user-bio";
+import createStripeAccount from "../../controllers/barbers/create/create-stripe-account";
+import confirmOnboard from "../../controllers/barbers/get/confirm-onboard";
+import updateShowcase from "../../controllers/barbers/update/update-showcase";
+import fileUpload from "../../middleware/file-upload";
+import updatePrimaryLocation from "../../controllers/barbers/update/update-primary-location";
 
 const router = Router();
 
 router.get("/get-coupons", getCoupons);
 router.get("/get-add-ons", getAddOns);
 router.get("/get-schedule", getSchedule);
+router.get("/create-stripe-account", createStripeAccount);
+router.get("/confirm-onboarding", confirmOnboard);
+
 router.post("/update-bio", updateUserBio);
+router.post("/update-primary-location", updatePrimaryLocation);
 router.post("/clear-schedule", clearSchedule);
 router.post("/edit-time-slot", updateSingleTimeslot)
 router.post("/add-time-slot", addTimeSlot);
@@ -31,6 +40,12 @@ router.post("/update-starting-price", updateStartingPrice);
 router.post("/update-visibility", updateVisibilty);
 router.post("/create-coupon", createCoupon);
 router.post("/edit-coupon", editCoupon);
+router.post(
+    "/update-gallery-images", 
+    fileUpload.single('image'), 
+    updateShowcase
+);
+
 router.delete("/delete-coupon", deleteCoupon);
 router.delete("/delete-add-on", deleteService);
 router.delete("/delete-time-slot", deleteTimeSlot);

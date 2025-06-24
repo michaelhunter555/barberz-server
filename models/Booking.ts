@@ -3,12 +3,14 @@ import mongoose from 'mongoose';
 interface IBookings extends mongoose.Document {
     customerId: mongoose.Types.ObjectId; // ref: Barbers
     barberId: mongoose.Types.ObjectId; // ref: Barbers
-    bookingDateAndTime: string;
+    bookingDate: string;
+    bookingTime: string;
     bookingLocation: string;
     isConfirmed: boolean;
     addOns: string[];
     price: number;
     discount?: number;
+    discountId?: mongoose.Types.ObjectId;
     couponAdded?: string;
     tip?: number;
     platformFee: number;
@@ -17,6 +19,7 @@ interface IBookings extends mongoose.Document {
     barberIsComplete: boolean;
     barberCompleteTime: string;
     customerConfirmComplete: boolean;
+    bookingStatus: 'pending' | 'confirmed' | 'completed' | 'canceled';
 };
 
 const BookingSchema = new mongoose.Schema<IBookings>({
@@ -30,12 +33,21 @@ const BookingSchema = new mongoose.Schema<IBookings>({
         ref: "Barbers",
         required: true,
     },
+    bookingStatus: {
+        type: String,
+        enum: ['pending', 'confirmed', 'completed', 'canceled'],
+        required: true,
+    },
     isConfirmed: {
         type: Boolean,
         required: true,
         default: false,
     },
-    bookingDateAndTime: {
+    bookingDate: {
+        type: String,
+        required: true,
+    },
+    bookingTime: {
         type: String,
         required: true,
     },
@@ -54,6 +66,11 @@ const BookingSchema = new mongoose.Schema<IBookings>({
     discount: {
         type: Number,
         default: 0,
+    },
+    discountId: {
+        type: mongoose.Schema.Types.ObjectId,
+        requried: false,
+        ref: 'Coupon'
     },
     couponAdded: {
         type: String,

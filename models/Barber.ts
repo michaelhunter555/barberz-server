@@ -31,6 +31,7 @@ export interface IBarber extends mongoose.Document {
     imageThree?: string;
     imageFour?: string;
     imageFive?: string;
+    imageSix?: string;
     appleId?: string;
     geoLocation?: {
         type: 'Point';
@@ -56,6 +57,10 @@ export interface IBarber extends mongoose.Document {
     shops?: mongoose.Types.ObjectId[];
     coupons?: mongoose.Types.ObjectId[];
     myCoupons?: mongoose.Types.ObjectId[];
+    primaryLocation?: string;
+    otherLocations?: string[];
+    stripeCustomerId: string;
+    stripeAccountId: string;
 };
 
 const BarberSchema = new mongoose.Schema<IBarber>({
@@ -64,6 +69,10 @@ const BarberSchema = new mongoose.Schema<IBarber>({
     bio: { type: String, required: false,},
     isVerified: { type: Boolean, required: true, default: false },
     isVisible: { type: Boolean, required: true, default: false,},
+    primaryLocation: { type: String, required: false, default: ""},
+    otherLocations: [{type: String, required: false, default: ""}],
+    stripeAccountId: { type: String, required: false, default: ""},
+    stripeCustomerId: { type: String, required: false, default: ""},
     userLicense: {
       name: { type: String, required: true, },
       state: { type: String, required: true, },
@@ -80,6 +89,7 @@ const BarberSchema = new mongoose.Schema<IBarber>({
     accountType: { type: String, required: true, enum: ["user", "barber"], default: "user"},
     imageFour: { type: String, required: false },
     imageFive: { type: String, required: false },
+    imageSix: { type: String, required: false },
     appleId: { type: String, required: false },
     geoLocation: {
         type: {
