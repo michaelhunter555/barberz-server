@@ -10,11 +10,11 @@ const fileUpload = multer({
       file.mimetype
     );
     if(!isValid) {
-        console.error(`Invalid file type: ${file.mimetype}`)
-        cb(new Error("Invalid fiel type. Only PNG, JPG, JPEG, HEIC are allowed"));
+        console.warn(`Rejected file upload: ${file.originalname} (${file.mimetype})`);
+        cb(new Error("Invalid file type. Only PNG, JPG, JPEG, HEIC are allowed"));
         return;
     }
-    
+
    cb(null, true);
   },
 });

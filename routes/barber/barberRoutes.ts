@@ -41,8 +41,15 @@ router.post("/update-visibility", updateVisibilty);
 router.post("/create-coupon", createCoupon);
 router.post("/edit-coupon", editCoupon);
 router.post(
-    "/update-gallery-images", 
-    fileUpload.single('image'), 
+    "/update-image-gallery", 
+    fileUpload.fields([
+  { name: 'imageOne' },
+  { name: 'imageTwo' },
+  { name: 'imageThree' },
+  { name: 'imageFour' },
+  { name: 'imageFive' },
+  { name: 'imageSix' },
+    ]), 
     updateShowcase
 );
 
