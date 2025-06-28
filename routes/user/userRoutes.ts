@@ -13,6 +13,6 @@ router.get("/get-one-barber", getSelectedBarber);
 router.post("/update-coordinates", updateGeolocation);
 router.post("/get-user-account", getSingleUser);
 router.post("/join-as-barber", joinAsBarber);
-router.post("/send-booking-request", createBookingRequest);
+router.post("/create-booking-request", createBookingRequest);
 
 export default router;

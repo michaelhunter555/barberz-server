@@ -1,13 +1,18 @@
 import mongoose from 'mongoose';
+import { TService } from './Services';
 
-interface IBookings extends mongoose.Document {
+export interface IBookings extends mongoose.Document {
     customerId: mongoose.Types.ObjectId; // ref: Barbers
+    customerName: string;
+    customerImg: string;
+    barberName: string;
     barberId: mongoose.Types.ObjectId; // ref: Barbers
     bookingDate: string;
     bookingTime: string;
     bookingLocation: string;
+    bookingDateAndTime: Date;
     isConfirmed: boolean;
-    addOns: string[];
+    addOns: TService[];
     price: number;
     discount?: number;
     discountId?: mongoose.Types.ObjectId;
@@ -33,6 +38,9 @@ const BookingSchema = new mongoose.Schema<IBookings>({
         ref: "Barbers",
         required: true,
     },
+    customerName: { type: String, required: true,},
+    customerImg: { type: String, required: true},
+    barberName: { type: String, required: true,},
     bookingStatus: {
         type: String,
         enum: ['pending', 'confirmed', 'completed', 'canceled'],
@@ -55,10 +63,21 @@ const BookingSchema = new mongoose.Schema<IBookings>({
         type: String,
         required: true,
     },
-    addOns: {
-        type: [String],
-        default: [],
+    bookingDateAndTime: {
+        type: Date,
+        required: true,
     },
+    addOns: {
+        type: [
+          {
+            name: { type: String, required: true },
+            description: { type: String, required: true },
+            price: { type: Number, required: true },
+          }
+        ],
+        default: [],
+        required: false, // fixed typo: "requried" ➝ "required"
+      },
     price: {
         type: Number,
         required: true,
@@ -66,6 +85,7 @@ const BookingSchema = new mongoose.Schema<IBookings>({
     discount: {
         type: Number,
         default: 0,
+        required: false,
     },
     discountId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -75,10 +95,12 @@ const BookingSchema = new mongoose.Schema<IBookings>({
     couponAdded: {
         type: String,
         default: null,
+        requried: false,
     },
     tip: {
         type: Number,
         default: 0,
+        required: false
     },
     platformFee: {
         type: Number,

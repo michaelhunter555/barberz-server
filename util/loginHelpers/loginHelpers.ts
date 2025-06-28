@@ -35,6 +35,7 @@ if(checkIsBarber(user)) {
             hasActiveDeal: user.hasActiveDeal,
             coupons: user.coupons ?? [],
             services: user.services ?? [],
+            stripeAccountId: user.stripeAccountId ?? "",
         }
 }
 return {
@@ -49,5 +50,7 @@ return {
     userIsLive: user.userIsLive,
     myCoupons: user.myCoupons ?? [],
     transactions: user.transactions ?? [],
+    myBookings: user.myBookings ?? [],
+    stripeCustomerId: user.stripeCustomerId ?? "",
 }
 }

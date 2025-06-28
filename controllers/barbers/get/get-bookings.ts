@@ -2,18 +2,19 @@ import { Request, Response } from 'express';
 import Booking from '../../../models/Booking';
 
 export default async function(req: Request, res: Response) {
-    const { barberId, page, limit } = req.query;
+    const { barberId, page, limit, status } = req.query;
     const pageNum = parseInt(String(page), 10) || 1;
     const limitNum = parseInt(String(limit), 10) || 10;
+    const hasStatus = status ? { bookingStatus: String(status) } : {}
 
     try {
-        const bookings = await Booking.find({ barberId: String(barberId) })
+        const bookings = await Booking.find({ barberId: String(barberId), ...hasStatus })
         .skip((pageNum - 1) * limitNum).limit(limitNum);
 
         if(!bookings) {
             return void res.status(404).json({ error: 'No bookings found', ok: false });
         }
-        const totalBookings = await Booking.countDocuments({ barberId: String(barberId) });
+        const totalBookings = await Booking.countDocuments({ barberId: String(barberId), ...hasStatus });
         res.status(200).json({
             bookings,
             currentPage: page,

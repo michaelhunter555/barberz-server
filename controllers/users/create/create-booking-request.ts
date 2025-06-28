@@ -1,9 +1,60 @@
 import { Request, Response } from 'express';
 import { findUserById } from '../../../lib/database/findUserById';
-import Booking from '../../../models/Booking';
+import Booking, { IBookings } from '../../../models/Booking';
+import mongoose from 'mongoose';
+import { TService } from '../../../models/Services';
+
+function getBookingDateTime(dateStr: string, timeStr: string): Date | null {
+    try {
+      // Clean the date: "on July 1st, 2025" → "July 1 2025"
+      const cleanDate = dateStr
+        .replace(/^on\s+/, '') // remove "on "
+        .replace(/(\d+)(st|nd|rd|th)/, '$1') // remove ordinal suffixes
+        .replace(',', ''); // remove comma
+  
+      // Clean the time: "5:00 PM-6:00 PM" → "5:00 PM"
+      const startTime = timeStr
+        .split('-')[0]
+        .replace(/\u202F/g, ' ') // replace narrow no-break space with normal space
+        .replace(/\s+/g, ' ') // collapse multiple spaces
+        .trim();
+  
+      const dateTimeStr = `${cleanDate} ${startTime}`;
+      const date = new Date(dateTimeStr);
+  
+      console.log('Parsed date string:', dateTimeStr);
+      if (isNaN(date.getTime())) {
+        return null;
+      }
+  
+      return date;
+    } catch (err) {
+      return null;
+    }
+  }
+  
+  
 
 export default async function(req: Request, res: Response) {
     const { userId, bookingData, barberId } = req.body;
+
+    const {
+        bookingDate,
+        bookingTime,
+        bookingLocation,
+        addOns,
+        discount,
+        discountId,
+        tip,
+        price
+      } = bookingData ?? {};
+
+      if (!bookingDate || !bookingTime || !bookingLocation || !price) {
+        return void res.status(400).json({
+          error: 'Missing required booking fields.',
+          ok: false
+        });
+      }
 
     try {
         const user = await findUserById(String(userId), res);
@@ -15,18 +66,34 @@ export default async function(req: Request, res: Response) {
             return void res.status(404).json({ error: 'barber not found.', ok: false })
         }
 
-        const createBooking = {
+        const bookingDateAndTime = getBookingDateTime(bookingDate, bookingTime);
+        if (!bookingDateAndTime) {
+            console.log("Converted BookingDate: ", bookingDateAndTime)
+        return void res.status(400).json({ error: 'Invalid booking date/time', ok: false });
+        }
+
+
+        const createBooking: Partial<IBookings> = {
             customerId: userId,
+            customerName: user?.name,
+            customerImg: user?.image,
             barberId,
-            bookingDate: bookingData.date,
-            bookingTime: bookingData.time,
-            bookingLocation: bookingData.location,
+            barberName: barber?.name,
+            bookingDate: bookingDate,
+            bookingTime: bookingTime,
+            bookingDateAndTime,
+            bookingLocation: bookingLocation,
             isConfirmed: false,
-            addOns: [...bookingData.addons],
-            discount: bookingData.discount,
-            discountId: bookingData.discountId,
-            price: bookingData.price,
-            tip: bookingData.tip ?? 0,
+            addOns: Array.isArray(addOns) ? 
+            addOns.filter(
+                (a): a is TService =>
+                  typeof a.name === 'string' &&
+                  typeof a.description === 'string' &&
+                  typeof a.price === 'number'
+              ) : [],
+            discount: discount,
+            price: price,
+            tip: tip ?? 0,
             platformFee: 0.10,
             barberIsStarted: false,
             barberStartTime: "",
@@ -36,6 +103,11 @@ export default async function(req: Request, res: Response) {
             bookingStatus: 'pending',
         }
 
+        if (discountId && mongoose.Types.ObjectId.isValid(discountId)) {
+            createBooking.discountId = discountId;
+          }
+
+        console.log("new booking", createBooking);
         const newBooking = new Booking(createBooking);
         await newBooking.save();
 
@@ -49,6 +121,7 @@ export default async function(req: Request, res: Response) {
         
         res.status(201).json({ newBooking, ok: true })
     } catch(err) {
-        res.status(500).json({ error: 'Error creating booing. ' + err, ok: false  })
+        console.log(err);
+        res.status(500).json({ error: 'Error creating booking. ' + err, ok: false  })
     }
 }

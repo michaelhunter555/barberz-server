@@ -20,12 +20,14 @@ import confirmOnboard from "../../controllers/barbers/get/confirm-onboard";
 import updateShowcase from "../../controllers/barbers/update/update-showcase";
 import fileUpload from "../../middleware/file-upload";
 import updatePrimaryLocation from "../../controllers/barbers/update/update-primary-location";
+import getBookings from "../../controllers/barbers/get/get-bookings";
 
 const router = Router();
 
 router.get("/get-coupons", getCoupons);
 router.get("/get-add-ons", getAddOns);
 router.get("/get-schedule", getSchedule);
+router.get("/get-bookings", getBookings);
 router.get("/create-stripe-account", createStripeAccount);
 router.get("/confirm-onboarding", confirmOnboard);
 

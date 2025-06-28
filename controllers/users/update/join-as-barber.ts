@@ -57,6 +57,8 @@ await serviceAgreement.save();
 
 user.userLicense = userLicense;
 user.accountType = "barber" ;
+
+// 
 await user.save();
 
 const userData = getAccountDetails(user);
