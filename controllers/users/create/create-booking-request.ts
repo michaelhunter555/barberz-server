@@ -3,6 +3,7 @@ import { findUserById } from '../../../lib/database/findUserById';
 import Booking, { IBookings } from '../../../models/Booking';
 import mongoose from 'mongoose';
 import { TService } from '../../../models/Services';
+import { io } from '../../../app';
 
 function getBookingDateTime(dateStr: string, timeStr: string): Date | null {
     try {
@@ -118,6 +119,22 @@ export default async function(req: Request, res: Response) {
         
         await barber.save();
         await user.save();
+
+        try{
+            io.to(barberId).emit('userAppointmentNotification', {
+                message: `You have a new appointment from ${userId}`,
+                appointment: {
+                    _id: newBooking._id,
+                    time: bookingTime,
+                    date: bookingDate,
+                    price: price,
+                    customerName: user.name,
+                }
+              });
+              
+        } catch(err) {
+            console.log("Notification failed: ", err)
+        }
         
         res.status(201).json({ newBooking, ok: true })
     } catch(err) {

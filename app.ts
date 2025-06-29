@@ -6,11 +6,34 @@ import userRoutes from './routes/user/userRoutes';
 import barberRoutes from './routes/barber/barberRoutes';
 import stripeRoutes from './routes/stripe/stripeRoutes';
 import onboardRoutes from './routes/onboardRoutes';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import { setupSocket } from './sockets/socket';
 
 dotenv.config();
 const app = express();
-app.use(cors());
+const server = createServer(app);
+export const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+});
 
+io.on('connection', (socket) => {
+  console.log(`[Socket] Connected: ${socket.id}`);
+});
+
+io.engine.on('connection_error', (err) => {
+  console.log('Socket.IO server error:', err);
+});
+
+
+setupSocket(io);
+
+app.use('/socket.io', (req, res, next) => next());
+
+app.use(cors());
 app.use((req, res, next) => {
   if (req.originalUrl === "/api/plans/stripe-webhook") {
     next();
@@ -34,7 +57,7 @@ const port = process.env.PORT || 5001;
 mongoose
 .connect(MONGO_URI as string)
 .then(() => {
-  app.listen(port, () => {
+  server.listen(port, () => {
       console.log("listening on port " + port);
   })
 }).catch((err) => console.log("Error connecting: " + err));
