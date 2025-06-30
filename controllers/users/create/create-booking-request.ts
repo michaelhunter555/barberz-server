@@ -4,6 +4,7 @@ import Booking, { IBookings } from '../../../models/Booking';
 import mongoose from 'mongoose';
 import { TService } from '../../../models/Services';
 import { io } from '../../../app';
+import { Notifications } from '../../../types';
 
 function getBookingDateTime(dateStr: string, timeStr: string): Date | null {
     try {
@@ -33,8 +34,6 @@ function getBookingDateTime(dateStr: string, timeStr: string): Date | null {
       return null;
     }
   }
-  
-  
 
 export default async function(req: Request, res: Response) {
     const { userId, bookingData, barberId } = req.body;
@@ -48,6 +47,7 @@ export default async function(req: Request, res: Response) {
         discountId,
         tip,
         price
+
       } = bookingData ?? {};
 
       if (!bookingDate || !bookingTime || !bookingLocation || !price) {
@@ -121,24 +121,32 @@ export default async function(req: Request, res: Response) {
         await user.save();
 
         try{
-            io.to(barberId).emit('userAppointmentNotification', {
-                message: `You have a new appointment from ${userId}`,
+            console.log(" 📡 Emit appoint to barber");
+            io.to(barberId).emit(Notifications.USER_APPOINTMENT_NOTIFICATION, {
+                message: `Booking Request from ${user.name}`,
                 appointment: {
                     _id: newBooking._id,
                     time: bookingTime,
                     date: bookingDate,
                     price: price,
                     customerName: user.name,
-                }
+                    customerId: user._id,
+                    customerImg: user.image,
+                    location: bookingLocation,
+                    tip: tip ?? 0,
+                    discount: discount ?? 0,
+                    addOns: createBooking.addOns,
+                    status: 'pending',
+                  }
               });
-              
+
         } catch(err) {
-            console.log("Notification failed: ", err)
+            console.log("Notification failed: ", err);
         }
         
-        res.status(201).json({ newBooking, ok: true })
+        res.status(201).json({ newBooking, ok: true });
     } catch(err) {
         console.log(err);
-        res.status(500).json({ error: 'Error creating booking. ' + err, ok: false  })
+        res.status(500).json({ error: 'Error creating booking. ' + err, ok: false  });
     }
 }

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { TService } from './Services';
 
 export interface IBookings extends mongoose.Document {
+    bookingNumber: number;
     customerId: mongoose.Types.ObjectId; // ref: Barbers
     customerName: string;
     customerImg: string;
@@ -24,7 +25,7 @@ export interface IBookings extends mongoose.Document {
     barberIsComplete: boolean;
     barberCompleteTime: string;
     customerConfirmComplete: boolean;
-    bookingStatus: 'pending' | 'confirmed' | 'completed' | 'canceled';
+    bookingStatus: 'pending' | 'confirmed' | 'completed' | 'canceled' | 'reschedule';
 };
 
 const BookingSchema = new mongoose.Schema<IBookings>({
@@ -43,7 +44,7 @@ const BookingSchema = new mongoose.Schema<IBookings>({
     barberName: { type: String, required: true,},
     bookingStatus: {
         type: String,
-        enum: ['pending', 'confirmed', 'completed', 'canceled'],
+        enum: ['pending', 'confirmed', 'completed', 'canceled', 'reschedule'],
         required: true,
     },
     isConfirmed: {

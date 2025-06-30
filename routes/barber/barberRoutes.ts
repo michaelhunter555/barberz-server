@@ -21,6 +21,10 @@ import updateShowcase from "../../controllers/barbers/update/update-showcase";
 import fileUpload from "../../middleware/file-upload";
 import updatePrimaryLocation from "../../controllers/barbers/update/update-primary-location";
 import getBookings from "../../controllers/barbers/get/get-bookings";
+import bookingRequestResponse from "../../controllers/barbers/update/booking-request-response";
+import getBookingById from "../../controllers/barbers/get/get-booking-by-id";
+import markBookingStarted from "../../controllers/barbers/update/mark-booking-started";
+import markBookingCompleted from "../../controllers/barbers/update/mark-booking-completed";
 
 const router = Router();
 
@@ -30,8 +34,12 @@ router.get("/get-schedule", getSchedule);
 router.get("/get-bookings", getBookings);
 router.get("/create-stripe-account", createStripeAccount);
 router.get("/confirm-onboarding", confirmOnboard);
+router.get("/get-booking-by-id", getBookingById);
+router.get("/mark-booking-started", markBookingStarted);
+router.get("/mark-booking-completed", markBookingCompleted);
 
 router.post("/update-bio", updateUserBio);
+router.post("/booking-request-response", bookingRequestResponse);
 router.post("/update-primary-location", updatePrimaryLocation);
 router.post("/clear-schedule", clearSchedule);
 router.post("/edit-time-slot", updateSingleTimeslot)
