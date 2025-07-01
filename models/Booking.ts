@@ -26,6 +26,8 @@ export interface IBookings extends mongoose.Document {
     barberCompleteTime: string;
     customerConfirmComplete: boolean;
     bookingStatus: 'pending' | 'confirmed' | 'completed' | 'canceled' | 'reschedule';
+    hasReview?: boolean;
+    reviewId: mongoose.Types.ObjectId;
 };
 
 const BookingSchema = new mongoose.Schema<IBookings>({
@@ -39,6 +41,8 @@ const BookingSchema = new mongoose.Schema<IBookings>({
         ref: "Barbers",
         required: true,
     },
+    hasReview: { type: Boolean, required: false, default: false},
+    reviewId: { type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Review' },
     customerName: { type: String, required: true,},
     customerImg: { type: String, required: true},
     barberName: { type: String, required: true,},

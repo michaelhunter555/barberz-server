@@ -11,6 +11,8 @@ if(checkIsBarber(user)) {
             accountType: user.accountType,
             name: user.name,
             email: user.email,
+            bio: user.bio,
+            primaryLocation: user.primaryLocation,
             isVisible: user.isVisible,
             isVerified: user.isVerified,
             userLicense: user.userLicense,

@@ -14,6 +14,7 @@ export default async function(req: Request, res: Response) {
         }
         booking.barberIsComplete = true;
         booking.barberCompleteTime = new Date();
+        booking.bookingStatus = 'completed';
        await booking.save();
 
        // trigger payment ?

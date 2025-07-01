@@ -6,6 +6,7 @@ import getNearestBarber from '../../controllers/users/get/get-nearest-barbers'
 import getSelectedBarber from '../../controllers/users/get/get-selected-barber';
 import createBookingRequest from '../../controllers/users/create/create-booking-request';
 import getMyBookings from '../../controllers/users/get/get-my-bookings';
+import createReview from '../../controllers/users/create/create-review';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.post("/update-coordinates", updateGeolocation);
 router.post("/get-user-account", getSingleUser);
 router.post("/join-as-barber", joinAsBarber);
 router.post("/create-booking-request", createBookingRequest);
+router.post("/create-user-review", createReview);
 
 export default router;

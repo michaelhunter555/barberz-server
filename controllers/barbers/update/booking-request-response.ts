@@ -11,7 +11,8 @@ export default async function(req: Request, res: Response) {
         const booking = await Booking.findOne({ _id: bookingId });
         const user = await findUserById(String(booking?.customerId), res);
         const barber = await findUserById(String(booking?.barberId), res);
-       booking.bookingStatus = bookingResponse as IBookings['bookingStatus'];
+        booking.bookingStatus = bookingResponse as IBookings['bookingStatus'];
+        booking.isConfirmed = bookingResponse === 'confirmed';
        await booking.save();
     
     
