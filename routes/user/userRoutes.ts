@@ -7,16 +7,26 @@ import getSelectedBarber from '../../controllers/users/get/get-selected-barber';
 import createBookingRequest from '../../controllers/users/create/create-booking-request';
 import getMyBookings from '../../controllers/users/get/get-my-bookings';
 import createReview from '../../controllers/users/create/create-review';
+import fileUpload from '../../middleware/file-upload';
+import setupIntents from '../../controllers/users/create/setup-intents';
 
 const router = Router();
 
 router.get("/get-nearest-barbers", getNearestBarber);
 router.get("/get-one-barber", getSelectedBarber);
 router.get("/get-my-bookings", getMyBookings);
+router.get("/setup-intents", setupIntents);
 router.post("/update-coordinates", updateGeolocation);
 router.post("/get-user-account", getSingleUser);
 router.post("/join-as-barber", joinAsBarber);
 router.post("/create-booking-request", createBookingRequest);
-router.post("/create-user-review", createReview);
+router.post("/create-user-review",
+    fileUpload.fields([
+        { name: 'imageOne', maxCount: 1 },
+        { name: 'imageTwo', maxCount: 1 },
+        { name: 'imageThree', maxCount: 1 },
+      ]), 
+    createReview
+);
 
 export default router;

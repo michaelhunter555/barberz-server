@@ -25,6 +25,8 @@ import bookingRequestResponse from "../../controllers/barbers/update/booking-req
 import getBookingById from "../../controllers/barbers/get/get-booking-by-id";
 import markBookingStarted from "../../controllers/barbers/update/mark-booking-started";
 import markBookingCompleted from "../../controllers/barbers/update/mark-booking-completed";
+import getReviews from "../../controllers/barbers/get/get-reviews";
+import getReviewById from "../../controllers/barbers/get/get-review-by-id";
 
 const router = Router();
 
@@ -37,6 +39,8 @@ router.get("/confirm-onboarding", confirmOnboard);
 router.get("/get-booking-by-id", getBookingById);
 router.get("/mark-booking-started", markBookingStarted);
 router.get("/mark-booking-completed", markBookingCompleted);
+router.get("/get-barber-reviews", getReviews);
+router.get("/get-review-by-id", getReviewById);
 
 router.post("/update-bio", updateUserBio);
 router.post("/booking-request-response", bookingRequestResponse);

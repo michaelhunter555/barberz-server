@@ -73,7 +73,6 @@ export default async function(req: Request, res: Response) {
         return void res.status(400).json({ error: 'Invalid booking date/time', ok: false });
         }
 
-
         const createBooking: Partial<IBookings> = {
             customerId: userId,
             customerName: user?.name,

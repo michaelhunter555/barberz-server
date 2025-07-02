@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 interface Reviews extends mongoose.Document {
     bookingId: mongoose.Types.ObjectId;
     userId: mongoose.Types.ObjectId;
+    userName: string;
+    userImg: string;
     barberId: mongoose.Types.ObjectId;
     reviewDate: Date;
     serviceDate: Date;
@@ -21,6 +23,8 @@ interface Reviews extends mongoose.Document {
 const ReviewSchema = new mongoose.Schema<Reviews>({
     bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'Barber', required: true },
+    userName: { type: String, required: true, },
+    userImg: { type: String, required: false},
     barberId: { type: mongoose.Schema.Types.ObjectId, ref: 'Barber', required: true },
     reviewDate: { type: Date, required: true, default: Date.now },
     serviceDate: { type: Date, required: true, default: Date.now },

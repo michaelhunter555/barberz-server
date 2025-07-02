@@ -5,9 +5,7 @@ import { destroyImage} from '../../../lib/cloudinary/cloudinaryHelper';
 
 export default async function (req: Request, res: Response) {
     const { barberId } = req.query;
-
-    console.log("Image SENT: ", req.files)
-
+    
     if (!barberId) {
         return void res.status(404).json({ error: 'barber id is undefined.', ok: false });
     }

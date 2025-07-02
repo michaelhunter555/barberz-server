@@ -2,9 +2,12 @@ import { Request, Response } from 'express';
 import User from "../../../models/Barber";
 import { getAccountDetails } from '../../../util/loginHelpers/loginHelpers';
 import Booking from '../../../models/Booking';
+import { ensureStripeCustomer } from '../../../util/createStripeAccount';
+import Stripe from 'stripe';
 
 export default async function(req: Request, res: Response) {
     const { email, name, imagePath } = req.body;
+    const stripe = new Stripe(`${process.env.STRIPE_TEST_SECRET_KEY}`);
 
     try {
         // check if user already exists
@@ -22,49 +25,22 @@ export default async function(req: Request, res: Response) {
             user = new User(newUser);
             await user.save();
         };
-      
-            if (user.accountType === 'user') {
-                await user.populate({
-                    path: 'myBookings',
-                    options: {
-                        sort: { bookingDateAndTime: 1 }, // optional: sort upcoming first
-                    }
-                });
-            }
 
-            let upcomingBooking = null;
-            let pendingRequest = null;
-            if(user.accountType === 'barber'){
-                user = await user.populate({
-                    path: 'customerBookings',
-                    options: {
-                        sort: { bookingDateAndTime: 1 },
-                    }
-                });
-            const now = new Date();
-
-            // ✅ Find next confirmed appointment
-            upcomingBooking = await Booking.findOne({
-              barberId: user._id,
-              bookingStatus: 'confirmed',
-              bookingDateAndTime: { $gte: now },
-            }).sort({ bookingDateAndTime: 1 });
-      
-            // ✅ Find next pending request
-            pendingRequest = await Booking.findOne({
-              barberId: user._id,
-              bookingStatus: 'pending',
-              bookingDateAndTime: { $gte: now },
-            }).sort({ bookingDateAndTime: 1 });
+        if(!user.stripeCustomerId) {
+            const customer = await stripe.customers.create({
+                email: user.email,
+                name: user.name,
+            })
+            user.stripeCustomerId = customer.id;
+            await user.save();
         }
-
+       
         const userData = getAccountDetails(user);
         res.status(200).json({ 
             userData, 
             ok: true,
-            upcomingBooking,
-            pendingRequest,
          });
+
     } catch(err) {
         console.log(err);
          res.status(500).json({ error: 'An error has occurred. ' + err, ok: false});

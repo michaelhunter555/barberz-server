@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import Booking from '../../../models/Booking';
 import { io } from '../../../app';
 import { Notifications } from '../../../types';
+import Barber from '../../../models/Barber';
 
 export default async function(req: Request, res: Response) {
     const { bookingId } = req.query;
@@ -16,6 +17,11 @@ export default async function(req: Request, res: Response) {
         booking.barberCompleteTime = new Date();
         booking.bookingStatus = 'completed';
        await booking.save();
+
+           const barber = await Barber.findByIdAndUpdate(booking.barberId, {
+               status: 'Available',
+              })
+              await barber.save();
 
        // trigger payment ?
     

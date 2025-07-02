@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Booking from '../../../models/Booking';
+import Barber from '../../../models/Barber';
 import { io } from '../../../app';
 import { Notifications } from '../../../types';
 
@@ -16,7 +17,12 @@ export default async function(req: Request, res: Response) {
         booking.isConfirmed = true;
         booking.barberStartTime = new Date();
        await booking.save();
-    
+
+       const barber = await Barber.findByIdAndUpdate(booking.barberId, {
+        status: 'Busy',
+       })
+       await barber.save();
+       // update barber status --- has active booking
     
         if(booking.customerId){
             io.to(String(booking.customerId)).emit(Notifications.BARBER_STARTED_APPOINTMENT, {
