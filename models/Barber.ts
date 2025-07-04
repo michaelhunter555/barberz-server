@@ -61,6 +61,10 @@ export interface IBarber extends mongoose.Document {
     otherLocations?: string[];
     stripeCustomerId: string;
     stripeAccountId: string;
+    cancelFee?: number;
+    cancelFeeType?: 'percent' | 'number';
+    cancelPolicy?: string;
+    paymentPolicy?: 'halfNow' | 'payInFull' | 'onCompletion';
 };
 
 const BarberSchema = new mongoose.Schema<IBarber>({
@@ -120,7 +124,12 @@ const BarberSchema = new mongoose.Schema<IBarber>({
     hasActiveDeal: { type: Boolean, required: true, default: false },
     shops: [{ type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Shop'}],
     coupons: [{ type: mongoose.Schema.Types.ObjectId, required: false, ref: "Coupon"}],
-    myCoupons: [{ type: mongoose.Schema.Types.ObjectId, required: false, ref: "Coupon"}]
+    myCoupons: [{ type: mongoose.Schema.Types.ObjectId, required: false, ref: "Coupon"}],
+    cancelFee: { type: Number, required: false, min: 0, default: 0, },
+    cancelFeeType: { type: String, enum: ['percent', 'number'], required: false,},
+    cancelPolicy: { type: String, required: false, trim: true, maxlength: 500,},
+    paymentPolicy: { type: String, enum: ['halfNow', 'payInFull', 'onCompletion'], required: false, default: 'onCompletion',},
+    
 }, { timestamps: true });
 
 BarberSchema.index({ geoLocation: '2dsphere' });

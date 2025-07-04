@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import { TService } from './Services';
 
+
+
 export interface IBookings extends mongoose.Document {
     bookingNumber: number;
     customerId: mongoose.Types.ObjectId; // ref: Barbers
@@ -28,6 +30,11 @@ export interface IBookings extends mongoose.Document {
     bookingStatus: 'pending' | 'confirmed' | 'completed' | 'canceled' | 'reschedule';
     hasReview?: boolean;
     reviewId: mongoose.Types.ObjectId;
+    paymentType: 'onCompletion' | 'halfNow' | 'payInFull';
+    cancelFee?: number;
+    cancelFeeType?: 'percent' | 'number';
+    initialPaymentIntentId?: string;
+    remainingAmount?: number;
 };
 
 const BookingSchema = new mongoose.Schema<IBookings>({
@@ -41,6 +48,11 @@ const BookingSchema = new mongoose.Schema<IBookings>({
         ref: "Barbers",
         required: true,
     },
+    initialPaymentIntentId: { type: String, required: false},
+    remainingAmount: { type: Number, required: false},
+    cancelFee: { type: Number, required: false, default: 0},
+    cancelFeeType: { type: String, required: true, enum: ['percent', 'number'], default: 'number'},
+    paymentType: { type: String, enum: ['onCompletion', 'halfNow', 'payInFull'], required: true,},
     hasReview: { type: Boolean, required: false, default: false},
     reviewId: { type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Review' },
     customerName: { type: String, required: true,},

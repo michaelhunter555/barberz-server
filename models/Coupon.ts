@@ -7,6 +7,7 @@ interface ICoupon extends mongoose.Document {
     isActive: boolean;
     transactionComplete: boolean;
     amount: number;
+    amountType: 'percent' | 'amount';
     terms: string;
     minPriceActivation: number;
     expirationDate: String;
@@ -20,6 +21,7 @@ const CouponSchema = new mongoose.Schema<ICoupon>({
     isPublic: { type: Boolean, required: false, default: true },
     isActive: { type: Boolean, required: false, default: false },
     amount: { type: Number, required: true, },
+    amountType: { type: String, enum: ['percent','amount'], required: true, default: 'amount'},
     terms: { type: String, required: true,},
     minPriceActivation: { type: Number, required: true, },
     expirationDate: { type: String, required: true, },

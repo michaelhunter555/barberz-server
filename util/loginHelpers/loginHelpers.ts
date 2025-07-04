@@ -38,6 +38,7 @@ if(checkIsBarber(user)) {
             coupons: user.coupons ?? [],
             services: user.services ?? [],
             stripeAccountId: user.stripeAccountId ?? "",
+            stripeCustomerId: user.stripeCustomerId ?? "",
         }
 }
 return {
