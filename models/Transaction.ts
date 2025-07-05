@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 export interface ITransaction extends mongoose.Document {
-  orderNumber: string; // not unique per transaction anymore
+  bookingNumber: string; // not unique per transaction anymore
   bookingId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   barberId: mongoose.Types.ObjectId;
@@ -20,7 +20,7 @@ export interface ITransaction extends mongoose.Document {
 }
 
 const TransactionSchema = new mongoose.Schema<ITransaction>({
-  orderNumber: { type: String, required: true }, // shared across related txns
+  bookingNumber: { type: String, required: true }, // shared across related txns
   bookingId: { type: mongoose.Schema.Types.ObjectId, ref: "Booking", required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "Barber", required: true },
   barberId: { type: mongoose.Schema.Types.ObjectId, ref: "Barber", required: true },

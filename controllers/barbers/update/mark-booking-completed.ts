@@ -1,30 +1,93 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import Booking from '../../../models/Booking';
 import { io } from '../../../app';
 import { Notifications } from '../../../types';
 import Barber from '../../../models/Barber';
+import Stripe from 'stripe';
+import Transaction from '../../../models/Transaction';
 
 export default async function(req: Request, res: Response) {
     const { bookingId } = req.query;
+    const stripe = new Stripe(`${process.env.STRIPE_TEST_SECRET_KEY}`);
+    const platformFee = Number(process.env.PLATFORM_FEE);
 
+    if (isNaN(platformFee)) {
+        throw new Error('Invalid PLATFORM_FEE environment variable.');
+      }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
         const booking = await Booking.findOne({ _id: bookingId });
 
         if(!booking) {
             return void res.status(404).json({ error: 'Could not find a booking with the givrn id.', ok: false })
         }
+        const [user, barber] = await Promise.all([
+            Barber.findById(booking.customerId),
+            Barber.findById(booking.barberId),
+        ])
+
+        const customer = await stripe.customers.retrieve(user.stripeCustomerId) as Stripe.Customer;
+        const defaultPaymentMethod = customer.invoice_settings?.default_payment_method;
+
+        if (!defaultPaymentMethod) {
+            throw new Error('No payment method on file');
+        }       
+
+          if (
+            (booking.paymentType === 'onCompletion') ||
+            (booking.paymentType === 'halfNow' && booking.remainingAmount > 0)
+          ) {
+            const amountToCharge = Math.floor(booking.remainingAmount); // already in cents
+          
+            const paymentIntent = await stripe.paymentIntents.create({
+              amount: amountToCharge,
+              currency: 'usd',
+              customer: user.stripeCustomerId,
+              payment_method: customer.invoice_settings?.default_payment_method as string,
+              off_session: true,
+              confirm: true,
+              metadata: {
+                userId: booking.customerId.toString(),
+                barberId: booking.barberId.toString(),
+                policy: booking.paymentType,
+              },
+              application_fee_amount: Math.floor(amountToCharge * platformFee),
+              transfer_data: {
+                destination: barber.stripeAccountId,
+              },
+            });
+          
+            const transaction = new Transaction({
+              bookingNumber: booking.bookingNumber,
+              bookingId: booking._id,
+              userId: user._id,
+              barberId: barber._id,
+              stripePaymentIntentId: paymentIntent.id,
+              stripeCustomerId: user.stripeCustomerId,
+              chargeId: typeof paymentIntent.latest_charge === 'string' ? paymentIntent.latest_charge : undefined,
+              amountCharged: booking.price * 100, // total price of the service
+              amountPaid: amountToCharge,
+              amountRemaining: 0,
+              paymentType: booking.paymentType === 'onCompletion' ? 'full' : 'final',
+              billingReason: 'Service completed',
+              currency: 'usd',
+              couponId: booking.discountId ?? undefined,
+              couponApplied: !!booking.discountId,
+            });
+          
+            await transaction.save({ session });
+          }
+
         booking.barberIsComplete = true;
         booking.barberCompleteTime = new Date();
         booking.bookingStatus = 'completed';
-       await booking.save();
-
-           const barber = await Barber.findByIdAndUpdate(booking.barberId, {
-               status: 'Available',
-              })
-              await barber.save();
-
-       // trigger payment ?
-    
+        booking.remainingAmount = 0;
+          
+        await booking.save({ session });
+        await barber.save({ session });
     
         if(booking.customerId){
             io.to(String(booking.customerId)).emit(Notifications.BARBER_COMPLETED_APPOINTMENT, {
@@ -43,6 +106,8 @@ export default async function(req: Request, res: Response) {
 
         res.status(200).json({ message: 'Successfully updated booking as completed.', ok: true })
     } catch(err) {
+        await session.abortTransaction();
+        session.endSession();
         console.log(err)
         res.status(500).json({ error: 'Error updating booking status ' + err, ok: false })
     }

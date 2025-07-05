@@ -13,6 +13,7 @@ import { generateOrderNumber } from '../../../util/bookingHelpers/orderNumberGen
 export default async function(req: Request, res: Response) {
     const { userId, bookingData, barberId } = req.body;
     const stripe = new Stripe(`${process.env.STRIPE_TEST_SECRET_KEY}`)
+    const platformFee = Number(process.env.PLATFORM_FEE);
 
     const {
         bookingDate,
@@ -24,6 +25,15 @@ export default async function(req: Request, res: Response) {
         tip,
         price
       } = bookingData ?? {};
+
+      if (isNaN(platformFee)) {
+          throw new Error('Invalid PLATFORM_FEE environment variable.');
+        }
+
+      if (typeof price !== 'number' || isNaN(price)) {
+            return void res.status(400).json({ error: 'Invalid price value.', ok: false });
+        }
+          
 
       if (!bookingDate || !bookingTime || !bookingLocation || !price) {
         return void res.status(400).json({
@@ -51,6 +61,7 @@ export default async function(req: Request, res: Response) {
         }
 
         const customer = await stripe.customers.retrieve(user.stripeCustomerId) as Stripe.Customer;
+        console.log("customer Object:",customer)
         const defaultPaymentMethod = customer.invoice_settings?.default_payment_method;
 
         if (!defaultPaymentMethod) {
@@ -82,6 +93,10 @@ export default async function(req: Request, res: Response) {
                 policy: String(barber.paymentPolicy),
                 tip: String(tip ?? 0),
               },
+              application_fee_amount: Math.floor(initialChargeAmount * platformFee),
+              transfer_data: {
+                destination: barber.stripeAccountId
+              },
               expand: ['latest_charge']
             });
           
@@ -89,8 +104,11 @@ export default async function(req: Request, res: Response) {
             chargeId = typeof paymentIntent.latest_charge === 'string' ? paymentIntent.latest_charge : "";
 
           }
+
+          const bookingNumber = generateOrderNumber(String(user?._id))
           
         const createBooking: Partial<IBookings> = {
+            bookingNumber,
             customerId: userId,
             customerName: user?.name,
             customerImg: user?.image,
@@ -111,7 +129,7 @@ export default async function(req: Request, res: Response) {
             discount: discount,
             price: price,
             tip: tip ?? 0,
-            platformFee: 0.075,
+            platformFee: platformFee,
             barberIsStarted: false,
             barberStartTime: "",
             barberIsComplete: false,
@@ -135,9 +153,8 @@ export default async function(req: Request, res: Response) {
         await newBooking.save({ session });
 
         if (initialChargeAmount > 0 && paymentIntentId) {
-            const orderNumber = generateOrderNumber(String(user?._id))
             const transaction = new Transaction({
-                orderNumber,
+                bookingNumber,
                 bookingId: newBooking._id,
                 userId: user._id,
                 barberId: barber._id,

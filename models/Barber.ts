@@ -61,6 +61,7 @@ export interface IBarber extends mongoose.Document {
     otherLocations?: string[];
     stripeCustomerId: string;
     stripeAccountId: string;
+    stripeDefaultPaymentMethodId?: string;
     cancelFee?: number;
     cancelFeeType?: 'percent' | 'number';
     cancelPolicy?: string;
@@ -77,6 +78,7 @@ const BarberSchema = new mongoose.Schema<IBarber>({
     otherLocations: [{type: String, required: false, default: ""}],
     stripeAccountId: { type: String, required: false, default: ""},
     stripeCustomerId: { type: String, required: false, default: ""},
+    stripeDefaultPaymentMethodId: { type: String, required: false, default: ""},
     userLicense: {
       name: { type: String, required: true, },
       state: { type: String, required: true, },

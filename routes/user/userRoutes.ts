@@ -10,6 +10,7 @@ import createReview from '../../controllers/users/create/create-review';
 import fileUpload from '../../middleware/file-upload';
 import setupIntents from '../../controllers/users/create/setup-intents';
 import getStripePaymentMethods from '../../controllers/users/get/get-stripe-payment-methods';
+import updateDefaultPayment from '../../controllers/users/update/update-default-payment';
 
 const router = Router();
 
@@ -18,6 +19,8 @@ router.get("/get-one-barber", getSelectedBarber);
 router.get("/get-my-bookings", getMyBookings);
 router.get("/setup-intents", setupIntents);
 router.get("/get-stripe-payment-methods", getStripePaymentMethods);
+
+router.post("/update-default-payment", updateDefaultPayment)
 router.post("/update-coordinates", updateGeolocation);
 router.post("/get-user-account", getSingleUser);
 router.post("/join-as-barber", joinAsBarber);

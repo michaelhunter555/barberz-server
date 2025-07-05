@@ -13,7 +13,7 @@ export default async function(req: Request, res: Response) {
         const setupIntent = await stripe.setupIntents.create({
             customer: `${stripeCustomerId}`,
         })
-        console.log("client_SECRET_", setupIntent.client_secret)
+        
         res.status(200).json({ clientSecret: setupIntent.client_secret, ok: true })
     } catch(err) {
         console.log(err);

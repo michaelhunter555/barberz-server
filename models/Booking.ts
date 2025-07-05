@@ -4,7 +4,7 @@ import { TService } from './Services';
 
 
 export interface IBookings extends mongoose.Document {
-    bookingNumber: number;
+    bookingNumber: string;
     customerId: mongoose.Types.ObjectId; // ref: Barbers
     customerName: string;
     customerImg: string;
@@ -38,6 +38,7 @@ export interface IBookings extends mongoose.Document {
 };
 
 const BookingSchema = new mongoose.Schema<IBookings>({
+    bookingNumber: { type: String, required: true, },
     customerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Barbers", // or "Barbers" if both are barbers
