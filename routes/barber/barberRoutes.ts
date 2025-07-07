@@ -28,6 +28,7 @@ import markBookingCompleted from "../../controllers/barbers/update/mark-booking-
 import getReviews from "../../controllers/barbers/get/get-reviews";
 import getReviewById from "../../controllers/barbers/get/get-review-by-id";
 import updateBookingPolicy from "../../controllers/barbers/update/update-booking-policy";
+import getUpcomingBookings from "../../controllers/barbers/get/get-upcoming-bookings";
 
 const router = Router();
 
@@ -42,6 +43,7 @@ router.get("/mark-booking-started", markBookingStarted);
 router.get("/mark-booking-completed", markBookingCompleted);
 router.get("/get-barber-reviews", getReviews);
 router.get("/get-review-by-id", getReviewById);
+router.get("/get-upcoming-bookings", getUpcomingBookings);
 
 router.post("/update-booking-policy", updateBookingPolicy);
 router.post("/update-bio", updateUserBio);

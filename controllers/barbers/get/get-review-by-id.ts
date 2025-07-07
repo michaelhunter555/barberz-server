@@ -3,7 +3,6 @@ import Review from '../../../models/Review';
 
 export default async function( req: Request, res: Response) {
     const { reviewId } = req.query;
-    console.log("reviewId: ", reviewId)
     try {
         const review = await Review.findById(String(reviewId))
         if(!review) {

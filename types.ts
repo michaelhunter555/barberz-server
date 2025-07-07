@@ -5,6 +5,7 @@ export type TUserQueryProps = {
     location?: string;
     startingPrice?: number;
     hours?: string;
+    rating?: number;
 }
 
 export enum DAYS_OF_WEEK {
