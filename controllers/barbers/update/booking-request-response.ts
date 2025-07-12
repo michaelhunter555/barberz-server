@@ -3,14 +3,41 @@ import Booking, { IBookings } from '../../../models/Booking';
 import { findUserById } from '../../../lib/database/findUserById';
 import { io } from '../../../app';
 import { Notifications } from '../../../types';
+import Stripe from 'stripe';
 
 export default async function(req: Request, res: Response) {
     const { bookingResponse, bookingId, customerId } = req.body;
+    const stripe = new Stripe(`${process.env.STRIPE_TEST_SECRET_KEY}`);
+
+    if(!['confirmed','canceled'].includes(bookingResponse)) {
+        return void res.status(400).json({ error: 'Unsupported booking response', ok: false })
+    }
 
     try {
         const booking = await Booking.findOne({ _id: bookingId });
         const user = await findUserById(String(booking?.customerId), res);
         const barber = await findUserById(String(booking?.barberId), res);
+
+        // handle cases for 100% paid up front or half now, half later
+        // booking remains in authorization state until barber confirms.
+        // once the booking is (confirmed || canceled), we can take stripe action.
+        if(booking.initialPaymentIntentId) {
+            const intent = await stripe.paymentIntents.retrieve(booking.initialPaymentIntentId);
+    
+            if(bookingResponse === 'confirmed'){
+                if(intent.status === 'requires_capture') {
+                    await stripe.paymentIntents.capture(intent.id);
+                }
+            }
+    
+            if(bookingResponse === 'canceled') {
+                if(intent.status === 'requires_capture') {
+                    await stripe.paymentIntents.cancel(intent.id);
+                }
+                booking.barberIsComplete = true;
+            }
+        }
+
         booking.bookingStatus = bookingResponse as IBookings['bookingStatus'];
         booking.isConfirmed = bookingResponse === 'confirmed';
        await booking.save();
@@ -30,16 +57,6 @@ export default async function(req: Request, res: Response) {
             })
         }
         // "pending" | "confirmed" | "completed" | "canceled" | "reschedule"
-        if(bookingResponse === 'confirmed'){
-            console.log('barber has accepted your booking');
-            
-        } else if( bookingResponse === 'canceled') {
-            console.log('barber chose not to accept this booking.');
-    
-        } else if(bookingResponse === 'reschedule') {
-            console.log('barber is asking to reschedule.');
-        }
-
         res.status(200).json({ message: 'Booking updated to ' + bookingResponse, ok: true })
     } catch(err) {
         console.log(err)

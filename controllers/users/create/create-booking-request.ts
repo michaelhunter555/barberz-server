@@ -23,7 +23,8 @@ export default async function(req: Request, res: Response) {
         discount,
         discountId,
         tip,
-        price
+        price,
+        serviceFee,
       } = bookingData ?? {};
 
       if (isNaN(platformFee)) {
@@ -68,13 +69,16 @@ export default async function(req: Request, res: Response) {
             throw new Error('No payment method on file');
         }
 
+        const totalCharge = Math.round(price * 100); // already includes service fee
+        const baseAmount = Math.round((price - (serviceFee ?? 0)) * 100); // what barber earns
+
         let initialChargeAmount = 0;
-        const serviceAmount = Math.round(price * 100); // Stripe expects amounts in cents
+        const serviceAmount = Math.round(baseAmount); // Stripe expects amounts in cents
 
         if (barber.paymentPolicy === 'payInFull') {
-        initialChargeAmount = serviceAmount;
+        initialChargeAmount = totalCharge;
         } else if (barber.paymentPolicy === 'halfNow') {
-        initialChargeAmount = Math.round(serviceAmount * 0.5);
+        initialChargeAmount = Math.round(totalCharge * 0.5);
         } 
 
         let paymentIntentId: string | null = null;
@@ -84,16 +88,18 @@ export default async function(req: Request, res: Response) {
               amount: initialChargeAmount,
               currency: 'usd',
               customer: user.stripeCustomerId,
-              payment_method: customer.invoice_settings?.default_payment_method as string,
+              payment_method: defaultPaymentMethod as string,
               off_session: true,
+              capture_method: 'manual',
               confirm: true,
               metadata: {
                 userId,
                 barberId,
                 policy: String(barber.paymentPolicy),
                 tip: String(tip ?? 0),
+                serviceFee: String(serviceFee ?? 0),
               },
-              application_fee_amount: Math.floor(initialChargeAmount * platformFee),
+              application_fee_amount: Math.floor(baseAmount * platformFee),
               transfer_data: {
                 destination: barber.stripeAccountId
               },
@@ -113,6 +119,7 @@ export default async function(req: Request, res: Response) {
             customerName: user?.name,
             customerImg: user?.image,
             barberId,
+            serviceFee: Number(serviceFee ?? 0),
             barberName: barber?.name,
             bookingDate: bookingDate,
             bookingTime: bookingTime,
@@ -156,6 +163,7 @@ export default async function(req: Request, res: Response) {
             const transaction = new Transaction({
                 bookingNumber,
                 bookingId: newBooking._id,
+                serviceFee: Number(serviceFee ?? 0),
                 userId: user._id,
                 barberId: barber._id,
                 amountCharged: serviceAmount,
@@ -212,7 +220,11 @@ export default async function(req: Request, res: Response) {
     } catch(err) {
         await session.abortTransaction();
         session.endSession();
+        let isCardError = false;
+        if(err instanceof Stripe.errors.StripeCardError) {
+          isCardError = true;
+        }
         console.log(err);
-        res.status(500).json({ error: 'Error creating booking. ' + err, ok: false  });
+        res.status(500).json({ error: 'Error creating booking. ' + err, ok: false, isCardError  });
     }
 }

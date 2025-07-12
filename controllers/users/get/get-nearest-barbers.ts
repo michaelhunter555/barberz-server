@@ -20,7 +20,7 @@ export default async function (req: Request, res: Response): Promise<void> {
         return;
       }
 
-      console.log("queryData: ",req.query);
+      // console.log("queryData: ",req.query);
   
       const pageNum = Number(page) > 0 ? parseInt(String(page), 10) : 1;
       const limitNum = Number(limit) > 0 ? parseInt(String(limit), 10) : 25;
@@ -84,7 +84,7 @@ export default async function (req: Request, res: Response): Promise<void> {
         },
       ];
 
-      console.log("pipeline: ", pipeline);
+     // console.log("pipeline: ", pipeline);
   
       const barbers = await Barber.aggregate(pipeline);
   

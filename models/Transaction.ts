@@ -11,12 +11,13 @@ export interface ITransaction extends mongoose.Document {
   amountCharged: number;
   amountPaid: number;
   amountRemaining: number;
-  paymentType: 'deposit' | 'final' | 'full';
+  paymentType: 'deposit' | 'final' | 'full' | 'refund';
   billingReason: string;
   currency?: string;
   invoiceUrl?: string;
   couponId?: mongoose.Schema.Types.ObjectId;
   couponApplied?: boolean;
+  serviceFee: number;
 }
 
 const TransactionSchema = new mongoose.Schema<ITransaction>({
@@ -26,11 +27,12 @@ const TransactionSchema = new mongoose.Schema<ITransaction>({
   barberId: { type: mongoose.Schema.Types.ObjectId, ref: "Barber", required: true },
   stripePaymentIntentId: { type: String, required: true },
   stripeCustomerId: { type: String, required: true },
+  serviceFee: { type: Number, required: true,},
   chargeId: { type: String, required: false },
   amountCharged: { type: Number, required: true },
   amountPaid: { type: Number, required: true },
   amountRemaining: { type: Number, required: false, default: 0 },
-  paymentType: { type: String, enum: ['deposit', 'final', 'full'], required: true },
+  paymentType: { type: String, enum: ['deposit', 'final', 'full', 'refund'], required: true },
   billingReason: { type: String, required: false, default: "" },
   currency: { type: String, required: false, default: "usd" },
   invoiceUrl: { type: String, required: false, default: "" },

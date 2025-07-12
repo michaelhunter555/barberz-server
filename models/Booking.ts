@@ -33,6 +33,7 @@ export interface IBookings extends mongoose.Document {
     paymentType: 'onCompletion' | 'halfNow' | 'payInFull';
     cancelFee?: number;
     cancelFeeType?: 'percent' | 'number';
+    serviceFee?: number;
     initialPaymentIntentId?: string;
     remainingAmount?: number;
 };
@@ -49,6 +50,7 @@ const BookingSchema = new mongoose.Schema<IBookings>({
         ref: "Barbers",
         required: true,
     },
+    serviceFee: { type: Number, required: true,},
     initialPaymentIntentId: { type: String, required: false},
     remainingAmount: { type: Number, required: false},
     cancelFee: { type: Number, required: false, default: 0},

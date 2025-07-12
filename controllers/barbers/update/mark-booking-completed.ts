@@ -18,17 +18,17 @@ export default async function(req: Request, res: Response) {
 
     const session = await mongoose.startSession();
     session.startTransaction();
+    const booking = await Booking.findOne({ _id: bookingId });
+
+    if(!booking) {
+        return void res.status(404).json({ error: 'Could not find a booking with the givrn id.', ok: false })
+    }
+    const [user, barber] = await Promise.all([
+        Barber.findById(booking.customerId),
+        Barber.findById(booking.barberId),
+    ])
+
     try {
-        const booking = await Booking.findOne({ _id: bookingId });
-
-        if(!booking) {
-            return void res.status(404).json({ error: 'Could not find a booking with the givrn id.', ok: false })
-        }
-        const [user, barber] = await Promise.all([
-            Barber.findById(booking.customerId),
-            Barber.findById(booking.barberId),
-        ])
-
         const customer = await stripe.customers.retrieve(user.stripeCustomerId) as Stripe.Customer;
         const defaultPaymentMethod = customer.invoice_settings?.default_payment_method;
 
@@ -48,6 +48,7 @@ export default async function(req: Request, res: Response) {
               customer: user.stripeCustomerId,
               payment_method: customer.invoice_settings?.default_payment_method as string,
               off_session: true,
+              capture_method: 'automatic',
               confirm: true,
               metadata: {
                 userId: booking.customerId.toString(),
@@ -88,6 +89,9 @@ export default async function(req: Request, res: Response) {
           
         await booking.save({ session });
         await barber.save({ session });
+
+        await session.commitTransaction();
+        session.endSession();
     
         if(booking.customerId){
             io.to(String(booking.customerId)).emit(Notifications.BARBER_COMPLETED_APPOINTMENT, {
@@ -108,8 +112,15 @@ export default async function(req: Request, res: Response) {
     } catch(err) {
         await session.abortTransaction();
         session.endSession();
+        let isCardError = false;
+        // handle card errors
+        if(err instanceof Stripe.errors.StripeCardError) {
+          // emit to user and barber?
+          isCardError = true;
+        // push notification to CUSTOMER
+        }
         console.log(err)
-        res.status(500).json({ error: 'Error updating booking status ' + err, ok: false })
+        res.status(500).json({ error: 'Error updating booking status ' + err, ok: false, isCardError })
     }
 
 

@@ -12,6 +12,7 @@ import setupIntents from '../../controllers/users/create/setup-intents';
 import getStripePaymentMethods from '../../controllers/users/get/get-stripe-payment-methods';
 import updateDefaultPayment from '../../controllers/users/update/update-default-payment';
 import cancelBooking from '../../controllers/users/update/cancel-booking';
+import getTransactions from '../../controllers/users/get/get-transactions';
 
 const router = Router();
 
@@ -20,8 +21,9 @@ router.get("/get-one-barber", getSelectedBarber);
 router.get("/get-my-bookings", getMyBookings);
 router.get("/setup-intents", setupIntents);
 router.get("/get-stripe-payment-methods", getStripePaymentMethods);
+router.get("/get-transactions", getTransactions);
 
-router.post("cancel-booking", cancelBooking);
+router.post("/cancel-booking", cancelBooking);
 router.post("/update-default-payment", updateDefaultPayment)
 router.post("/update-coordinates", updateGeolocation);
 router.post("/get-user-account", getSingleUser);

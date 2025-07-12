@@ -30,15 +30,26 @@ export default async function(req: Request, res: Response) {
             throw new Error('There was an error finding the booking, user and provider.')
         }
 
-        if(booking.paymentType === 'onCompletion' && booking.cancelFee > 0) {
-            const customer = await stripe.customers.retrieve(user?.stripeCustomerId) as Stripe.Customer;
-            const defaultPaymentMethodId = customer?.invoice_settings?.default_payment_method
+        if(booking.bookingStatus === 'confirmed' && booking.paymentType === 'onCompletion' && booking.cancelFee > 0) {
+            const { cancelFee, cancelFeeType, price } = booking;
+            const isNumberAmount = cancelFeeType === 'number';
+            let cancelFeeAmount: number = 0;
 
-            if(!defaultPaymentMethodId) {
-                throw new Error('Need a valid payment method on file.')
+            if(isNumberAmount && cancelFee <= price) {
+                cancelFeeAmount = Math.round((price * 100) - (cancelFee * 100));
             }
 
-            const cancelFeeAmount = Math.round((booking.price * 100) * (booking.cancelFee / 100));
+            if(!isNumberAmount) {
+                cancelFeeAmount = Math.round((price * 100) * (cancelFee / 100));
+            }
+
+            const customer = await stripe.customers.retrieve(user?.stripeCustomerId) as Stripe.Customer;
+            const defaultPaymentMethodId = customer?.invoice_settings?.default_payment_method;
+
+            if(!defaultPaymentMethodId) {
+                throw new Error('Need a valid payment method on file.');
+            }
+
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: cancelFeeAmount,
                 currency: 'usd',
@@ -79,22 +90,36 @@ export default async function(req: Request, res: Response) {
 
             user.transactions.push(t._id);
             barber.transactions.push(t._id);
-
-            booking.bookingStatus = 'canceled';
-            booking.barberIsComplete = true;
         }
 
+        if(booking.bookingStatus === 'pending' && booking.initialPaymentIntentId) {
+                const intents = await stripe.paymentIntents.retrieve(booking.initialPaymentIntentId);
+
+                if(intents.status === 'requires_capture') {
+                    await stripe.paymentIntents.cancel(intents.id);
+                }
+        }
+        
+        booking.bookingStatus = 'canceled';
+        booking.barberIsStarted = true;
+        booking.barberIsComplete = true;
         await user.save({ session });
         await barber.save({ session });
         await booking.save({ session });
 
+
+        await session.commitTransaction(); 
         session.endSession();
 
-        io.to(barber._id).emit(Notifications.BOOKING_CANCELLED_BY_USER, {
-            message: `Booking has been cancelled by ${user.name.split(" ")[0]}`,
-            text1: `${booking.bookingDate} @${booking.bookingTime.split("-")[0]}`,
-            bookingId,
-        })
+        try {
+            io.to(String(barber._id)).emit(Notifications.BOOKING_CANCELLED_BY_USER, {
+                message: `Booking has been cancelled by ${user.name.split(" ")[0]}`,
+                time: `${booking.bookingDate} @${booking.bookingTime.split("-")[0]}`,
+                bookingId,
+            })
+        } catch(err) {
+            console.log('failed to emit to baber')
+        }
 
         res.status(200).json({ message: 'Booking has been cancelled', ok: true})
     } catch(err) {
