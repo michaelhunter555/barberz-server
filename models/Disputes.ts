@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
 
-interface IDisputes extends mongoose.Document {
+export interface IDisputes extends mongoose.Document {
     userId: mongoose.Types.ObjectId;
     barberId: mongoose.Types.ObjectId;
     bookingId: mongoose.Types.ObjectId;
     transactionId: mongoose.Types.ObjectId;
     disputeExplanation: string;
     disputeDate: Date;
-    initiator: mongoose.Types.ObjectId;
+    initiator: 'user' | 'barber';
     initiatorName: string;
     amountPaid: number;
     stripePaymentIntentId: string;
@@ -16,7 +16,7 @@ interface IDisputes extends mongoose.Document {
     imageOne: string;
     imageTwo: string;
     category: 'no_show' | 'service_not_provided' | 'unsafe_environment' | 'client_behavoir' | 'barber_behavoir' | 'incorrect_charge_amount';
-    disputeStatus: 'await_barber_response' |'in_review' | 'awaiting_user_response';
+    disputeStatus: 'awaiting_barber_response' |'in_review' | 'awaiting_user_response';
     decision: 'in_favor_barber' | 'in_favor_user';
     action: 'none' | 'refund' | 'partial_refund' | 'pending';
     platformResponse: string,
@@ -29,7 +29,7 @@ const DisputeSchema = new mongoose.Schema<IDisputes>({
     transactionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Transaction', required: true},
     disputeExplanation: { type: String, required: true },
     disputeDate: { type: Date, default: Date.now },
-    initiator: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    initiator: { type: String, enum: ['user', 'barber'], required: true },
     initiatorName: { type: String, required: true },
     amountPaid: { type: Number, required: true },
     stripePaymentIntentId: { type: String, required: true },
@@ -45,8 +45,8 @@ const DisputeSchema = new mongoose.Schema<IDisputes>({
     },
     disputeStatus: {
       type: String,
-      enum: ['await_barber_response', 'in_review', 'awaiting_user_response'],
-      default: 'await_barber_response',
+      enum: ['awaiting_barber_response', 'in_review', 'awaiting_user_response'],
+      default: 'in_review',
     },
     decision: {
       type: String,
@@ -54,6 +54,6 @@ const DisputeSchema = new mongoose.Schema<IDisputes>({
       default: null,
     },
     platformResponse: { type: String, required: false, },
-  });
+  }, { timestamps: true });
 
 export default mongoose.models.Dispute || mongoose.model<IDisputes>("Dispute", DisputeSchema);

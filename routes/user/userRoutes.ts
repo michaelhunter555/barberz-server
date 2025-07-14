@@ -13,6 +13,8 @@ import getStripePaymentMethods from '../../controllers/users/get/get-stripe-paym
 import updateDefaultPayment from '../../controllers/users/update/update-default-payment';
 import cancelBooking from '../../controllers/users/update/cancel-booking';
 import getTransactions from '../../controllers/users/get/get-transactions';
+import createDispute from '../../controllers/users/create/create-dispute';
+import getDisputeById from '../../controllers/users/get/get-dispute-by-id';
 
 const router = Router();
 
@@ -22,6 +24,7 @@ router.get("/get-my-bookings", getMyBookings);
 router.get("/setup-intents", setupIntents);
 router.get("/get-stripe-payment-methods", getStripePaymentMethods);
 router.get("/get-transactions", getTransactions);
+router.get("/get-dispute-by-id", getDisputeById);
 
 router.post("/cancel-booking", cancelBooking);
 router.post("/update-default-payment", updateDefaultPayment)
@@ -29,6 +32,10 @@ router.post("/update-coordinates", updateGeolocation);
 router.post("/get-user-account", getSingleUser);
 router.post("/join-as-barber", joinAsBarber);
 router.post("/create-booking-request", createBookingRequest);
+router.post("/create-dispute",fileUpload.fields([
+  {name: 'imageOne', maxCount: 1},
+  {name: 'imageTwo', maxCount: 1}
+]), createDispute);
 router.post("/create-user-review",
     fileUpload.fields([
         { name: 'imageOne', maxCount: 1 },

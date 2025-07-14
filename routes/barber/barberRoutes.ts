@@ -31,6 +31,8 @@ import updateBookingPolicy from "../../controllers/barbers/update/update-booking
 import getUpcomingBookings from "../../controllers/barbers/get/get-upcoming-bookings";
 import cancelConfirmedBooking from "../../controllers/barbers/update/cancel-confirmed-booking";
 import getPayoutInfo from "../../controllers/barbers/get/get-payout-info";
+import updateBookingWithImage from "../../controllers/barbers/update/update-booking-with-image";
+import disputeResponse from "../../controllers/barbers/update/dispute-response";
 
 const router = Router();
 
@@ -62,6 +64,8 @@ router.post("/update-starting-price", updateStartingPrice);
 router.post("/update-visibility", updateVisibilty);
 router.post("/create-coupon", createCoupon);
 router.post("/edit-coupon", editCoupon);
+router.post("/respond-to-dispute", disputeResponse);
+router.post("/add-post-completion-img",fileUpload.single('proofOfCompletionImg') ,updateBookingWithImage)
 router.post(
     "/update-image-gallery", 
     fileUpload.fields([

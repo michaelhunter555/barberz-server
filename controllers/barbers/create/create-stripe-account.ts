@@ -18,7 +18,7 @@ export default async function( req: Request, res: Response) {
             email: barber.email,
             controller: {
                 losses: {
-                    payments: 'application',
+                    payments: 'stripe',
                 },
                 fees: {
                     payer: 'application',

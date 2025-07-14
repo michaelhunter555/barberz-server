@@ -40,7 +40,17 @@ export default async function(req: Request, res: Response) {
             (booking.paymentType === 'onCompletion') ||
             (booking.paymentType === 'halfNow' && booking.remainingAmount > 0)
           ) {
-            const amountToCharge = Math.floor(booking.remainingAmount); // already in cents
+            const fullServiceFee = Number(booking.serviceFee ?? 0);
+            const platformFee = Number(process.env.PLATFORM_FEE); // 0.08 for 8%
+            const chargePortion = booking.paymentType === 'halfNow' ? 0.5 : 1;
+
+            const recordedServiceFee = fullServiceFee * chargePortion;
+            const baseAmount = Math.round((booking.price - fullServiceFee) * 100);
+            const amountToCharge = Math.round(booking.price * 100 * chargePortion); // amount being collected now
+
+            const applicationFeeAmount = Math.floor(
+              recordedServiceFee * 100 + baseAmount * chargePortion * platformFee
+            );
           
             const paymentIntent = await stripe.paymentIntents.create({
               amount: amountToCharge,
@@ -55,17 +65,18 @@ export default async function(req: Request, res: Response) {
                 barberId: booking.barberId.toString(),
                 policy: booking.paymentType,
               },
-              application_fee_amount: Math.floor(amountToCharge * platformFee),
+              application_fee_amount: applicationFeeAmount,
               transfer_data: {
                 destination: barber.stripeAccountId,
               },
             });
-          
+
             const transaction = new Transaction({
               bookingNumber: booking.bookingNumber,
               bookingId: booking._id,
               userId: user._id,
               barberId: barber._id,
+              serviceFee: recordedServiceFee,
               stripePaymentIntentId: paymentIntent.id,
               stripeCustomerId: user.stripeCustomerId,
               chargeId: typeof paymentIntent.latest_charge === 'string' ? paymentIntent.latest_charge : undefined,

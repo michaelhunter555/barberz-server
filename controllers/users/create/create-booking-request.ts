@@ -69,17 +69,25 @@ export default async function(req: Request, res: Response) {
             throw new Error('No payment method on file');
         }
 
-        const totalCharge = Math.round(price * 100); // already includes service fee
-        const baseAmount = Math.round((price - (serviceFee ?? 0)) * 100); // what barber earns
-
+        const fraction = barber.paymentPolicy === 'halfNow' ? 0.5 : 1;
+        const recordedServiceFee = serviceFee * fraction;
+        const totalCharge = Math.round(price * 100);
+        const baseAmount = Math.round((price - serviceFee) * 100);
         let initialChargeAmount = 0;
+        let remainingAmount = totalCharge;
+
         const serviceAmount = Math.round(baseAmount); // Stripe expects amounts in cents
 
         if (barber.paymentPolicy === 'payInFull') {
         initialChargeAmount = totalCharge;
+        remainingAmount = 0;
         } else if (barber.paymentPolicy === 'halfNow') {
         initialChargeAmount = Math.round(totalCharge * 0.5);
+        remainingAmount = Math.round(totalCharge * 0.5);
         } 
+
+        const platformCut = baseAmount * fraction * platformFee;
+        const applicationFee = Math.floor(recordedServiceFee * 100 + platformCut);
 
         let paymentIntentId: string | null = null;
         let chargeId: string | null = null;
@@ -97,9 +105,9 @@ export default async function(req: Request, res: Response) {
                 barberId,
                 policy: String(barber.paymentPolicy),
                 tip: String(tip ?? 0),
-                serviceFee: String(serviceFee ?? 0),
+                serviceFee: recordedServiceFee,
               },
-              application_fee_amount: Math.floor(baseAmount * platformFee),
+              application_fee_amount: applicationFee,
               transfer_data: {
                 destination: barber.stripeAccountId
               },
@@ -148,7 +156,7 @@ export default async function(req: Request, res: Response) {
             cancelFeeType: barber?.cancelFeeType ?? "number",
             initialPaymentIntentId: paymentIntentId ?? "",
             remainingAmount: barber.paymentPolicy === 'halfNow' || barber.paymentPolicy === 'onCompletion' 
-              ? serviceAmount - initialChargeAmount 
+              ? remainingAmount 
               : 0
         }
 
@@ -163,12 +171,12 @@ export default async function(req: Request, res: Response) {
             const transaction = new Transaction({
                 bookingNumber,
                 bookingId: newBooking._id,
-                serviceFee: Number(serviceFee ?? 0),
+                serviceFee: recordedServiceFee,
                 userId: user._id,
                 barberId: barber._id,
-                amountCharged: serviceAmount,
+                amountCharged: serviceAmount, // barber charge
                 amountPaid: initialChargeAmount,
-                amountRemaining: serviceAmount - initialChargeAmount,
+                amountRemaining: remainingAmount,
                 paymentType: barber.paymentPolicy === 'payInFull' ? 'full': 'deposit',
                 billingReason: 'Provider Pre-booking requirement',
                 currency: 'usd',

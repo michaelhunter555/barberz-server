@@ -26,6 +26,7 @@ export interface IBookings extends mongoose.Document {
     barberStartTime: string;
     barberIsComplete: boolean;
     barberCompleteTime: string;
+    proofOfCompletionImg?: string;
     customerConfirmComplete: boolean;
     bookingStatus: 'pending' | 'confirmed' | 'completed' | 'canceled' | 'reschedule';
     hasReview?: boolean;
@@ -50,6 +51,7 @@ const BookingSchema = new mongoose.Schema<IBookings>({
         ref: "Barbers",
         required: true,
     },
+    proofOfCompletionImg: { type: String, required: false},
     serviceFee: { type: Number, required: true,},
     initialPaymentIntentId: { type: String, required: false},
     remainingAmount: { type: Number, required: false},

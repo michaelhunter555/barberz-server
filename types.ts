@@ -78,6 +78,7 @@ export type AppointmentNotification = {
     BARBER_COMPLETED_APPOINTMENT = 'barberCompletedAppointmentNotification',
 
     USER_DISPUTE_STARTED ='userDisputeNotification',
+    BARBER_RESPONSE_TO_DISPUTE = 'barberResponseToDispute',
 
     BOOKING_CONFIRMED = 'bookingConfirmed',
     BOOKING_DECLINED = 'bookingDeclined',

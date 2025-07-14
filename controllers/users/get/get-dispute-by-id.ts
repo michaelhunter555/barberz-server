@@ -1,10 +1,5 @@
 import { Request, Response } from 'express';
-import Transaction from '../../../models/Transaction';
 import Dispute from '../../../models/Disputes';
-import uploadToCloudinary from '../../../lib/cloudinary/cloudinaryHelper';
-import { findUserById } from '../../../lib/database/findUserById';
-import { io } from '../../../app';
-import { Notifications } from '../../../types';
 
 export default async function(req: Request, res: Response) {
     const { disputeId } = req.query;
