@@ -33,6 +33,7 @@ import cancelConfirmedBooking from "../../controllers/barbers/update/cancel-conf
 import getPayoutInfo from "../../controllers/barbers/get/get-payout-info";
 import updateBookingWithImage from "../../controllers/barbers/update/update-booking-with-image";
 import disputeResponse from "../../controllers/barbers/update/dispute-response";
+import getBookedSlotsForDate from "../../controllers/barbers/get/get-booked-slots-for-date";
 
 const router = Router();
 
@@ -49,6 +50,7 @@ router.get("/get-barber-reviews", getReviews);
 router.get("/get-review-by-id", getReviewById);
 router.get("/get-upcoming-bookings", getUpcomingBookings);
 router.get("/get-payment-settings", getPayoutInfo);
+router.get("/get-booked-slots-for-date", getBookedSlotsForDate);
 
 router.post("/cancel-confirmed-booking", cancelConfirmedBooking);
 router.post("/update-booking-policy", updateBookingPolicy);

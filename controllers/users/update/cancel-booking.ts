@@ -31,17 +31,23 @@ export default async function(req: Request, res: Response) {
         }
 
         if(booking.bookingStatus === 'confirmed' && booking.paymentType === 'onCompletion' && booking.cancelFee > 0) {
-            const { cancelFee, cancelFeeType, price } = booking;
+            const { cancelFee, cancelFeeType, price, serviceFee } = booking;
+            const baseCharge = Math.round((price - serviceFee) * 100);
+            
             const isNumberAmount = cancelFeeType === 'number';
             let cancelFeeAmount: number = 0;
-
+            
             if(isNumberAmount && cancelFee <= price) {
-                cancelFeeAmount = Math.round((price * 100) - (cancelFee * 100));
+                cancelFeeAmount = Math.round(cancelFee * 100);
             }
-
+            
             if(!isNumberAmount) {
                 cancelFeeAmount = Math.round((price * 100) * (cancelFee / 100));
             }
+            
+            const proportionalServiceFee = serviceFee * (cancelFeeAmount / (price * 100));
+            const platformCut = (baseCharge * platformFee) * (cancelFeeAmount / (price * 100));
+            const applicationFee = Math.floor((proportionalServiceFee * 100) + platformCut);
 
             const customer = await stripe.customers.retrieve(user?.stripeCustomerId) as Stripe.Customer;
             const defaultPaymentMethodId = customer?.invoice_settings?.default_payment_method;
@@ -56,11 +62,15 @@ export default async function(req: Request, res: Response) {
                 customer: user?.stripeCustomerId,
                 payment_method: defaultPaymentMethodId as string,
                 off_session: true,
+                capture_method:'automatic',
                 confirm: true,
                 metadata: {
-                   reason: 'Provider cancellation policy.',
+                    reason: 'Provider cancellation policy.',
+                    cancelFeeType,
+                    cancelFeeValue: String(cancelFee),
+                    bookingId: String(booking._id)
                   },
-                  application_fee_amount: Math.floor(cancelFeeAmount * platformFee),
+                  application_fee_amount: applicationFee,
                   transfer_data: {
                     destination: barber.stripeAccountId,
                   }
@@ -75,8 +85,9 @@ export default async function(req: Request, res: Response) {
                 bookingId: booking._id,
                 userId: user._id,
                 barberId: barber._id,
-                amountCharges: cancelFeeAmount,
+                amountCharged: cancelFeeAmount,
                 amountPaid: cancelFeeAmount,
+                serviceFee: proportionalServiceFee,
                 amountRemaining: 0,
                 paymentType: 'final',
                 billingReason: 'Provider Cancellation Policy',

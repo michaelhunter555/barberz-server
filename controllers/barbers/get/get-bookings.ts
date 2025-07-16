@@ -32,6 +32,9 @@ export default async function(req: Request, res: Response) {
         }
         const totalBookings = await Booking.countDocuments(baseQuery);
         res.status(200).json({
+            // completed bookings for the week mon-sun (performance view)
+            // total unconfirmed bookings
+            // total confirmed bookings
             bookings,
             currentPage: page,
             totalPages: Math.ceil(totalBookings/limitNum),
