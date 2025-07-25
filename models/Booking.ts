@@ -28,7 +28,7 @@ export interface IBookings extends mongoose.Document {
     barberCompleteTime: string;
     proofOfCompletionImg?: string;
     customerConfirmComplete: boolean;
-    bookingStatus: 'pending' | 'confirmed' | 'completed' | 'canceled' | 'reschedule';
+    bookingStatus: 'pending' | 'confirmed' | 'completed' | 'canceled' | 'reschedule' | 'expired';
     hasReview?: boolean;
     reviewId: mongoose.Types.ObjectId;
     paymentType: 'onCompletion' | 'halfNow' | 'payInFull';
@@ -37,6 +37,7 @@ export interface IBookings extends mongoose.Document {
     serviceFee?: number;
     initialPaymentIntentId?: string;
     remainingAmount?: number;
+    isAppLevelCoupon?: boolean;
 };
 
 const BookingSchema = new mongoose.Schema<IBookings>({
@@ -65,7 +66,7 @@ const BookingSchema = new mongoose.Schema<IBookings>({
     barberName: { type: String, required: true,},
     bookingStatus: {
         type: String,
-        enum: ['pending', 'confirmed', 'completed', 'canceled', 'reschedule'],
+        enum: ['pending', 'confirmed', 'completed', 'canceled', 'reschedule', 'expired'],
         required: true,
     },
     isConfirmed: {
@@ -148,6 +149,7 @@ const BookingSchema = new mongoose.Schema<IBookings>({
         type: Boolean,
         default: false,
     },
+    isAppLevelCoupon: { type: Boolean, required: false }
 }, { timestamps: true });
 
 export default mongoose.models.Booking || mongoose.model<IBookings>("Booking", BookingSchema);

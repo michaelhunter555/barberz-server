@@ -13,6 +13,7 @@ interface ICoupon extends mongoose.Document {
     expirationDate: String;
     transactions: number;
     onlyForUsers?: [mongoose.Types.ObjectId];
+    isAppLevel?: boolean;
 }
 
 const CouponSchema = new mongoose.Schema<ICoupon>({
@@ -28,6 +29,7 @@ const CouponSchema = new mongoose.Schema<ICoupon>({
     transactions: { type: Number, required: true, defualt: 0},
     transactionComplete: { type: Boolean, required: false, default: false},
     onlyForUsers: { type: [mongoose.Schema.Types.ObjectId], required: false, ref: "Barber"},
+    isAppLevel: { type: Boolean, required: false, default: false }
 }, { timestamps: true });
 
 export default mongoose.models.Coupon || mongoose.model<ICoupon>("Coupon", CouponSchema);

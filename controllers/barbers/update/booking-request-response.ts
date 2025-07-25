@@ -4,6 +4,7 @@ import { findUserById } from '../../../lib/database/findUserById';
 import { io } from '../../../app';
 import { Notifications } from '../../../types';
 import Stripe from 'stripe';
+import Transaction from '../../../models/Transaction';
 
 export default async function(req: Request, res: Response) {
     const { bookingResponse, bookingId, customerId } = req.body;
@@ -33,6 +34,7 @@ export default async function(req: Request, res: Response) {
             if(bookingResponse === 'canceled') {
                 if(intent.status === 'requires_capture') {
                     await stripe.paymentIntents.cancel(intent.id);
+                    await Transaction.findByIdAndDelete({ bookingId: booking._id });
                 }
                 booking.barberIsComplete = true;
             }

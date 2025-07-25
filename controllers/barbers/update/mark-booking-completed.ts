@@ -89,6 +89,9 @@ export default async function(req: Request, res: Response) {
               couponId: booking.discountId ?? undefined,
               couponApplied: !!booking.discountId,
             });
+
+            const rewardPoints = Math.floor(booking.price / 10);
+            user.rewardPoints = user.rewardPoints += rewardPoints;
           
             await transaction.save({ session });
           }

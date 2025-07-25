@@ -17,6 +17,13 @@ export type LicenseInfo = {
   registrationNumber: number;
 }
 
+export type UserLocationData = {
+  primaryLocation: string;
+  state: string;
+  city: string;
+  zip: string;
+}
+
 export interface IBarber extends mongoose.Document {
     name: string;
     email: string;
@@ -66,6 +73,11 @@ export interface IBarber extends mongoose.Document {
     cancelFeeType?: 'percent' | 'number';
     cancelPolicy?: string;
     paymentPolicy?: 'halfNow' | 'payInFull' | 'onCompletion';
+    rewardPoints?: number;
+    myFavorites?: mongoose.Types.ObjectId[];
+    hasAppLevelCoupon?: boolean;
+    appLevelCouponCodes: string[];
+    clientLocation?: UserLocationData;
 };
 
 const BarberSchema = new mongoose.Schema<IBarber>({
@@ -131,7 +143,16 @@ const BarberSchema = new mongoose.Schema<IBarber>({
     cancelFeeType: { type: String, enum: ['percent', 'number'], required: false,},
     cancelPolicy: { type: String, required: false, trim: true, maxlength: 500,},
     paymentPolicy: { type: String, enum: ['halfNow', 'payInFull', 'onCompletion'], required: false, default: 'onCompletion',},
-    
+   rewardPoints: { type: Number, required: false, default: 0},
+   myFavorites: [{type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Barber'}],
+   hasAppLevelCoupon: { type: Boolean, required: false },
+    appLevelCouponCodes: [{ type: String, required: false,}],
+    clientLocation: {
+      primaryLocation: { type: String, required: false},
+  state: {type: String, required: false},
+  city: {type: String, required: false },
+  zip: { type: String, required: false,}
+    }
 }, { timestamps: true });
 
 BarberSchema.index({ geoLocation: '2dsphere' });

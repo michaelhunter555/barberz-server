@@ -14,11 +14,11 @@ export default async function(req: Request, res: Response) {
     const [balance, payouts, account] = await Promise.all([
             stripe.balance.retrieve({ stripeAccount: String(stripeAccountId) }),
             stripe.payouts.list(
-                { limit: 1 }, { stripeAccount: String(stripeAccountId) }
+                { limit: 10 }, { stripeAccount: String(stripeAccountId) }
             ),
             stripe.accounts.retrieve(String(stripeAccountId))
         ])
-        
+
         res.status(200).json({
             balance: {
               available: balance.available,

@@ -12,7 +12,7 @@ import { generateOrderNumber } from '../../../util/bookingHelpers/orderNumberGen
 
 export default async function(req: Request, res: Response) {
     const { userId, bookingData, barberId } = req.body;
-    const stripe = new Stripe(`${process.env.STRIPE_TEST_SECRET_KEY}`)
+    const stripe = new Stripe(`${process.env.STRIPE_TEST_SECRET_KEY}`);
     const platformFee = Number(process.env.PLATFORM_FEE);
 
     const {

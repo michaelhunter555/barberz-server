@@ -9,6 +9,8 @@ import onboardRoutes from './routes/onboardRoutes';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { setupSocket } from './sockets/socket';
+import nodeCron from 'node-cron';
+import checkBookingExpiration from './controllers/cronjobs/checkBookingExpiration';
 
 dotenv.config();
 const app = express();
@@ -53,6 +55,10 @@ const port = process.env.PORT || 5001;
   console.log("MONGO_URI environment variable is not set!");
   process.exit(1);
  }
+
+ nodeCron.schedule("0 0 * * *", () => {
+  checkBookingExpiration();
+ })
 
 mongoose
 .connect(MONGO_URI as string)

@@ -39,6 +39,9 @@ if(checkIsBarber(user)) {
             services: user.services ?? [],
             stripeAccountId: user.stripeAccountId ?? "",
             stripeCustomerId: user.stripeCustomerId ?? "",
+            stripeDefaultPaymentMethodId: user.stripeDefaultPaymentMethodId,
+            myFavorites: user.myFavorites ?? [],
+            rewardPoints: user.rewardPoints
         }
 }
 return {
@@ -55,5 +58,9 @@ return {
     transactions: user.transactions ?? [],
     myBookings: user.myBookings ?? [],
     stripeCustomerId: user.stripeCustomerId ?? "",
+    stripeDefaultPaymentMethodId: user.stripeDefaultPaymentMethodId,
+    myFavorites: user.myFavorites ?? [],
+    rewardPoints: user.rewardPoints,
+    clientLocation: user.clientLocation,
 }
 }
