@@ -6,6 +6,7 @@ import userRoutes from './routes/user/userRoutes';
 import barberRoutes from './routes/barber/barberRoutes';
 import stripeRoutes from './routes/stripe/stripeRoutes';
 import onboardRoutes from './routes/onboardRoutes';
+import chatRoutes from './routes/chat/chatRoutes';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { setupSocket } from './sockets/socket';
@@ -47,6 +48,7 @@ app.use("/", onboardRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/barber", barberRoutes);
 app.use("/api/marketplace", stripeRoutes);
+app.use("/api/chat", chatRoutes);
 // TODO: URI redirect address after auth
 const port = process.env.PORT || 5001;
  const MONGO_URI: string | undefined = process.env.MONGO_DB_URI;

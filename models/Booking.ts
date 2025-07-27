@@ -8,6 +8,7 @@ export interface IBookings extends mongoose.Document {
     customerId: mongoose.Types.ObjectId; // ref: Barbers
     customerName: string;
     customerImg: string;
+    barberImg: string;
     barberName: string;
     barberId: mongoose.Types.ObjectId; // ref: Barbers
     bookingDate: string;
@@ -38,10 +39,12 @@ export interface IBookings extends mongoose.Document {
     initialPaymentIntentId?: string;
     remainingAmount?: number;
     isAppLevelCoupon?: boolean;
+    chatId?: mongoose.Types.ObjectId;
 };
 
 const BookingSchema = new mongoose.Schema<IBookings>({
     bookingNumber: { type: String, required: true, },
+    chatId: { type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Chat' },
     customerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Barbers", // or "Barbers" if both are barbers
@@ -64,6 +67,7 @@ const BookingSchema = new mongoose.Schema<IBookings>({
     customerName: { type: String, required: true,},
     customerImg: { type: String, required: true},
     barberName: { type: String, required: true,},
+    barberImg: { type: String, required: true},
     bookingStatus: {
         type: String,
         enum: ['pending', 'confirmed', 'completed', 'canceled', 'reschedule', 'expired'],

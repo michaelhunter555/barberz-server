@@ -13,6 +13,7 @@ export interface IJoinAgreements extends mongoose.Document {
     termsApproved: boolean;
     imageIdFront: string;
     imageIdBack: string;
+    isApproved?: boolean;
 };
 
 const JoinAgreementSchema = new mongoose.Schema<IJoinAgreements>({
@@ -26,6 +27,7 @@ const JoinAgreementSchema = new mongoose.Schema<IJoinAgreements>({
     signature: { type: String, required: true, },
     imageIdFront: { type: String, required: true},
     imageIdBack: { type: String, required: true },
+    isApproved: { type: Boolean, required: false,}
 });
 
 export default mongoose.models.Join || mongoose.model<IJoinAgreements>("JoinApplication", JoinAgreementSchema);

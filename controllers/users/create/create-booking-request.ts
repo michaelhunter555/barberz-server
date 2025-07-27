@@ -9,6 +9,9 @@ import { Notifications } from '../../../types';
 import { getBookingDateTime } from '../../../util/getBookingdateAndTime';
 import { findUserById } from '../../../lib/database/findUserById';
 import { generateOrderNumber } from '../../../util/bookingHelpers/orderNumberGenerator';
+import Chat from '../../../models/Chat';
+
+const placeholderImage = 'https://res.cloudinary.com/dbbwuklgb/image/upload/v1753549795/placeholder_bkidl9.png';
 
 export default async function(req: Request, res: Response) {
     const { userId, bookingData, barberId } = req.body;
@@ -116,16 +119,16 @@ export default async function(req: Request, res: Response) {
           
             paymentIntentId = paymentIntent.id;
             chargeId = typeof paymentIntent.latest_charge === 'string' ? paymentIntent.latest_charge : "";
-
           }
 
-          const bookingNumber = generateOrderNumber(String(user?._id))
-          
+        const bookingNumber = generateOrderNumber(String(user?._id));
+
         const createBooking: Partial<IBookings> = {
             bookingNumber,
             customerId: userId,
             customerName: user?.name,
             customerImg: user?.image,
+            barberImg: barber?.image,
             barberId,
             serviceFee: Number(serviceFee ?? 0),
             barberName: barber?.name,
@@ -165,7 +168,6 @@ export default async function(req: Request, res: Response) {
           }
 
         const newBooking = new Booking(createBooking);
-        await newBooking.save({ session });
 
         if (initialChargeAmount > 0 && paymentIntentId) {
             const transaction = new Transaction({
@@ -189,6 +191,29 @@ export default async function(req: Request, res: Response) {
 
             await transaction.save({ session });
         }
+
+        const chat = new Chat({
+          bookingId: newBooking._id,
+          participants: [barber._id, user._id],
+          participantInfo: [{
+            id: user._id,
+            name: user?.name,
+            image: user?.image ?? placeholderImage,
+            role: 'user',
+          },
+          {
+            id: barber._id,
+            name: barber?.name,
+            image: barber?.image ?? placeholderImage,
+            role: 'barber',
+          }
+        ],
+        createdAt: new Date(),
+      });
+      await chat.save({ session });
+
+      newBooking.chatId = chat._id;
+      await newBooking.save({ session })
 
         barber.requestedBooking = Number(barber?.requestedBooking ?? 0) + 1;
         barber.customerBookings?.push(newBooking._id);

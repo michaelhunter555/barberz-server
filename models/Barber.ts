@@ -52,6 +52,7 @@ export interface IBarber extends mongoose.Document {
     isAvailable?: boolean;
     status?: Status;
     startingPrice?: number;
+    houseCallPrice?: number;
     hours?: mongoose.Types.ObjectId[];
     avgReviewScore?: number;
     totalReviews?: number;
@@ -127,6 +128,7 @@ const BarberSchema = new mongoose.Schema<IBarber>({
     isAvailable: { type: Boolean, required: true, default: true },
     status: { type: String, enum: ['Available', 'Busy', 'Away'], required: true, default: "Busy" },
     startingPrice: { type: Number, required: false, default: 0 },
+    houseCallPrice: { type: Number, required: false, default: 0 },
     hours:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Hour'}],
     avgReviewScore: { type: Number, required: true, default: 0 },
     totalReviews: { type: Number, required: true, default: 0 },

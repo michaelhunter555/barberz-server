@@ -7,7 +7,7 @@ interface ICoupon extends mongoose.Document {
     isActive: boolean;
     transactionComplete: boolean;
     amount: number;
-    amountType: 'percent' | 'amount';
+    amountType?: 'percent' | 'amount';
     terms: string;
     minPriceActivation: number;
     expirationDate: String;
