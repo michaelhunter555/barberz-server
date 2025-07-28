@@ -8,9 +8,10 @@ export default async function(req: Request, res: Response) {
     const orderNum = order === "1" ? 1:-1;
 
     try {
-        const chats = Chat.find({
+        const chats = await Chat.find({
             participants: { $in: [userId] },
-        }).skip((pageNum - 1) * limitNum).limit(limitNum).sort({ updatedAt: orderNum });
+        }).skip((pageNum - 1) * limitNum)
+        .limit(limitNum).sort({ updatedAt: orderNum });
 
         if(!chats) {
             return void res.status(404).json({ error: 'No chats associated with the given user id.', ok: false })

@@ -27,6 +27,7 @@ if(checkIsBarber(user)) {
             status: user.status,
             isAvailable: user.isAvailable,
             startingPrice: user.startingPrice,
+            houseCallPrice: user.houseCallPrice,
             hours: user.hours,
             avgReviewScore: user.avgReviewScore,
             totalReviews: user.totalReviews,
