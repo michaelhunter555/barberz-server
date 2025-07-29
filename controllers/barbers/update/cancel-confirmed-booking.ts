@@ -3,6 +3,7 @@ import Booking from '../../../models/Booking';
 import Stripe from 'stripe';
 import { io } from '../../../app';
 import { Notifications } from '../../../types';
+import Chat from '../../../models/Chat';
 
 export default async function(req: Request, res: Response) {
     const { bookingId } = req.body;
@@ -35,6 +36,13 @@ export default async function(req: Request, res: Response) {
         booking.barberIsComplete = true;
         booking.barberIsStarted = true;
         booking.barberCompleteTime = new Date();
+
+        
+        const chat = await Chat.findOne({
+            bookingId: booking._id,
+        })
+        chat.chatIsComplete = true;
+        await chat.save();
 
         await booking.save();
 

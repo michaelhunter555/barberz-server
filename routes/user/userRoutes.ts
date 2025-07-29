@@ -23,6 +23,7 @@ import removeFavorite from '../../controllers/users/update/remove-favorite';
 import myFavorites from '../../controllers/users/get/my-favorites';
 import changeName from '../../controllers/users/update/change-name';
 import updatePrimaryLocation from '../../controllers/users/update/update-primary-location';
+import rescheduleRequestResponse from '../../controllers/users/update/reschedule-request-response';
 
 const router = Router();
 
@@ -36,6 +37,7 @@ router.get("/get-dispute-by-id", getDisputeById);
 router.get("/get-disputes", getDisputes);
 router.get("/get-favorites", myFavorites);
 
+router.post("/reschedule-response", rescheduleRequestResponse);
 router.post("/update-user-primary-location", updatePrimaryLocation);
 router.post("/update-user-name", changeName);
 router.post("/add-favorite-provider", favoriteProviders);

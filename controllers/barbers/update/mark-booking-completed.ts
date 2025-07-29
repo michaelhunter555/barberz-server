@@ -6,6 +6,7 @@ import { Notifications } from '../../../types';
 import Barber from '../../../models/Barber';
 import Stripe from 'stripe';
 import Transaction from '../../../models/Transaction';
+import Chat from '../../../models/Chat';
 
 export default async function(req: Request, res: Response) {
     const { bookingId } = req.query;
@@ -100,7 +101,14 @@ export default async function(req: Request, res: Response) {
         booking.barberCompleteTime = new Date();
         booking.bookingStatus = 'completed';
         booking.remainingAmount = 0;
-          
+
+       
+        const chat = await Chat.findOne({
+            bookingId: booking._id,
+        })
+        chat.chatIsComplete = true;
+        
+        await chat.save({ session });
         await booking.save({ session });
         await barber.save({ session });
 

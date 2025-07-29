@@ -5,6 +5,7 @@ import { io } from '../../../app';
 import { Notifications } from '../../../types';
 import Stripe from 'stripe';
 import Transaction from '../../../models/Transaction';
+import Chat from '../../../models/Chat';
 
 export default async function(req: Request, res: Response) {
     const { bookingResponse, bookingId, customerId } = req.body;
@@ -38,6 +39,14 @@ export default async function(req: Request, res: Response) {
                 }
                 booking.barberIsComplete = true;
             }
+        }
+
+        if(bookingResponse === 'canceled'){
+            const chat = await Chat.findOne({
+                bookingId: booking._id,
+            })
+            chat.chatIsComplete = true;
+            await chat.save();
         }
 
         booking.bookingStatus = bookingResponse as IBookings['bookingStatus'];

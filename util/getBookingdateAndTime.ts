@@ -26,3 +26,31 @@ export function getBookingDateTime(dateStr: string, timeStr: string): Date | nul
       return null;
     }
   }
+
+  export const formatDateString = (dateStr: string) => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+  
+    const months = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+  
+    const getOrdinal = (n: number) => {
+      if (n > 3 && n < 21) return `${n}th`;
+      switch (n % 10) {
+        case 1: return `${n}st`;
+        case 2: return `${n}nd`;
+        case 3: return `${n}rd`;
+        default: return `${n}th`;
+      }
+    };
+  
+    return `on ${months[month - 1]} ${getOrdinal(day)}, ${year}`;
+  };
+
+  export const formatToAMPM = (hour: number, minute: number): string => {
+    const date = new Date();
+    date.setHours(hour);
+    date.setMinutes(minute);
+    return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  };

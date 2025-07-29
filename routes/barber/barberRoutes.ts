@@ -36,6 +36,7 @@ import disputeResponse from "../../controllers/barbers/update/dispute-response";
 import getBookedSlotsForDate from "../../controllers/barbers/get/get-booked-slots-for-date";
 import updateProfilePhoto from "../../controllers/barbers/update/update-profile-photo";
 import getPerformanceData from "../../controllers/barbers/get/get-performance-data";
+import createRescheduleRequest from "../../controllers/barbers/create/create-reschedule-request";
 
 const router = Router();
 
@@ -55,6 +56,7 @@ router.get("/get-payment-settings", getPayoutInfo);
 router.get("/get-booked-slots-for-date", getBookedSlotsForDate);
 router.get("/get-performance-data", getPerformanceData);
 
+router.post("/create-reschedule-request", createRescheduleRequest);
 router.post("/cancel-confirmed-booking", cancelConfirmedBooking);
 router.post("/update-booking-policy", updateBookingPolicy);
 router.post("/update-bio", updateUserBio);

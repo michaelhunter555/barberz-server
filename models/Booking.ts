@@ -40,6 +40,11 @@ export interface IBookings extends mongoose.Document {
     remainingAmount?: number;
     isAppLevelCoupon?: boolean;
     chatId?: mongoose.Types.ObjectId;
+    rescheduleRequest?: {
+        requestedDay: string,
+        startTime: string;
+        endTime: string; 
+    };
 };
 
 const BookingSchema = new mongoose.Schema<IBookings>({
@@ -116,13 +121,13 @@ const BookingSchema = new mongoose.Schema<IBookings>({
     },
     discountId: {
         type: mongoose.Schema.Types.ObjectId,
-        requried: false,
+        required: false,
         ref: 'Coupon'
     },
     couponAdded: {
         type: String,
         default: null,
-        requried: false,
+        required: false,
     },
     tip: {
         type: Number,
@@ -153,7 +158,12 @@ const BookingSchema = new mongoose.Schema<IBookings>({
         type: Boolean,
         default: false,
     },
-    isAppLevelCoupon: { type: Boolean, required: false }
+    isAppLevelCoupon: { type: Boolean, required: false },
+    rescheduleRequest: {
+        requestedDay: { type: String, required: false,},
+        startTime: { type: String, required: false,},
+        endTime: { type: String, required: false } 
+     },
 }, { timestamps: true });
 
 export default mongoose.models.Booking || mongoose.model<IBookings>("Booking", BookingSchema);
