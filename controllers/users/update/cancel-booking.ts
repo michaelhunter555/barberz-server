@@ -3,9 +3,12 @@ import mongoose from 'mongoose';
 import Booking from '../../../models/Booking';
 import User from '../../../models/Barber'; // <- intentional
 import Transaction from '../../../models/Transaction';
+import Chat from '../../../models/Chat';
 import Stripe from 'stripe';
 import { io } from '../../../app';
-import { Notifications } from '../../../types';
+import { App, Notifications } from '../../../types';
+import expo, { isExpoPushToken } from '../../../util/ExpoNotifications';
+import { checkRoom } from '../../../util/checkRoomHelper';
 
 export default async function(req: Request, res: Response) {
     const platformFee = Number(process.env.PLATFORM_FEE);
@@ -110,6 +113,10 @@ export default async function(req: Request, res: Response) {
                     await stripe.paymentIntents.cancel(intents.id);
                 }
         }
+
+        const chat = await Chat.findByIdAndUpdate(booking.chatId, {
+            chatIscomplete: true,
+        })
         
         booking.bookingStatus = 'canceled';
         booking.barberIsStarted = true;
@@ -117,20 +124,34 @@ export default async function(req: Request, res: Response) {
         await user.save({ session });
         await barber.save({ session });
         await booking.save({ session });
+        await chat.save({ session })
 
 
         await session.commitTransaction(); 
         session.endSession();
+        
+        const isOnline = checkRoom(io, String(barber._id));
 
-        try {
-            io.to(String(barber._id)).emit(Notifications.BOOKING_CANCELLED_BY_USER, {
-                message: `Booking has been cancelled by ${user.name.split(" ")[0]}`,
-                time: `${booking.bookingDate} @${booking.bookingTime.split("-")[0]}`,
-                bookingId,
-            })
-        } catch(err) {
-            console.log('failed to emit to baber')
-        }
+       if(barber._id && isOnline) {
+           io.to(String(barber._id)).emit(Notifications.BOOKING_CANCELLED_BY_USER, {
+               message: `Booking has been cancelled by ${user.name.split(" ")[0]}`,
+               time: `${booking.bookingDate} @${booking.bookingTime.split("-")[0]}`,
+               bookingId,
+           })
+       } else if(barber && barber?.pushToken && isExpoPushToken(barber?.pushToken)) {
+        await expo.sendPushNotificationsAsync([
+            {
+                to: barber.pushToken,
+                title: App.NAME,
+                subtitle: 'Booking canceled by client',
+                body: `A booking ${booking.bookingDate} @${booking.bookingTime.split("-")[0]} has been canceled by the client.`,
+                data: {
+                    path: `/booking/${booking._id}`,
+                }
+            }
+        ])
+       }
+       
 
         res.status(200).json({ message: 'Booking has been cancelled', ok: true})
     } catch(err) {

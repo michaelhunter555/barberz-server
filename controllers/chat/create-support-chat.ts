@@ -21,12 +21,13 @@ export default async function(req: Request, res: Response) {
 
     try {
         const hasChat = await Chat.findOne({
-            participants: [senderId, adminId],
+            participants: { $all: [senderId, adminId] },
             chatIsComplete: false,
         });
 
         if(hasChat) {
-            res.status(400).json({ error: 'You have chats that are not completed.', ok: false })
+            console.log("HAS CHAT: ")
+            return void res.status(400).json({ error: 'You have support chats that are not marked as completed.', ok: false })
         }
         const user = await Barber.findById(String(senderId));
 
@@ -34,12 +35,11 @@ export default async function(req: Request, res: Response) {
             return void res.status(400).json({ error: 'Could not find a user with the given id.', ok: false })
         }
 
-
         const chat = new Chat({
             participants: [new mongoose.Types.ObjectId(adminId), user?._id],
             participantInfo: [
                 {id: adminId, name: 'Support Team', image: placeholder, role: 'admin' },
-                {id: user._id, name:user.name, image: user.image, role: user.accountType }
+                {id: user._id, name:user.name, image: user.image, role: user.accountType, ...(user?.pushToken ? { pushToken: user.pushToken }: {}) }
             ],
             lastMessage: "Thank you for contacting support. Please leave a message and a team member will reply as soon as possible.",
             lastMessageTime: new Date(),

@@ -21,6 +21,8 @@ export interface ITransaction extends mongoose.Document {
   hasDispute?: boolean;
   disputeStartDate?: Date | string;
   disputeId?: mongoose.Schema.Types.ObjectId;
+  paidOut?: boolean;
+  payoutDate?: Date;
 }
 
 const TransactionSchema = new mongoose.Schema<ITransaction>({
@@ -43,7 +45,9 @@ const TransactionSchema = new mongoose.Schema<ITransaction>({
   couponId: { type: mongoose.Schema.Types.ObjectId, ref: "Coupon", required: false },
   hasDispute: { type: Boolean, required: false, defualt: false},
   disputeStartDate: { type: Date, required: false, },
-  disputeId: { type: mongoose.Schema.Types.ObjectId, required: false}
+  disputeId: { type: mongoose.Schema.Types.ObjectId, required: false},
+  paidOut: { type: Boolean, required: false, default: false },
+  payoutDate: { type: Date, required: false,}
 }, { timestamps: true });
 
 export default mongoose.models.Transaction ||

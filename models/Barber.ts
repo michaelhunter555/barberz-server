@@ -28,6 +28,7 @@ export interface IBarber extends mongoose.Document {
     name: string;
     email: string;
     bio?: string;
+    pushToken?: string;
     isVerified?: boolean;
     userLicense?: LicenseInfo;
     myBookings?: mongoose.Types.ObjectId[];
@@ -62,6 +63,7 @@ export interface IBarber extends mongoose.Document {
     customerBookings?: mongoose.Types.ObjectId[];
     hasActiveDeal?: boolean;
     accountType?: 'user' | 'barber',
+    accountStatus: 'good' | 'suspended' |'banned';
     shops?: mongoose.Types.ObjectId[];
     coupons?: mongoose.Types.ObjectId[];
     myCoupons?: mongoose.Types.ObjectId[];
@@ -79,14 +81,20 @@ export interface IBarber extends mongoose.Document {
     hasAppLevelCoupon?: boolean;
     appLevelCouponCodes: string[];
     clientLocation?: UserLocationData;
+    accountStrikes?: number;
+    barberDebt?: number;
 };
 
 const BarberSchema = new mongoose.Schema<IBarber>({
     name: { type: String, required: true },
     email: { type: String, required: true },
     bio: { type: String, required: false,},
+    pushToken: { type: String, required: false},
+    barberDebt: { type: Number, required: false, default: 0},
     isVerified: { type: Boolean, required: true, default: false },
     isVisible: { type: Boolean, required: true, default: false,},
+    accountStatus: { type: String, required: true, default: 'good', enum: ['good', 'suspended', 'banned']},
+    accountStrikes: { type: Number, required: false, default: 0},
     primaryLocation: { type: String, required: false, default: ""},
     otherLocations: [{type: String, required: false, default: ""}],
     stripeAccountId: { type: String, required: false, default: ""},

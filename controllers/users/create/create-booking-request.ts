@@ -5,11 +5,13 @@ import Stripe from 'stripe';
 import Transaction from '../../../models/Transaction';
 import { TService } from '../../../models/Services';
 import { io } from '../../../app';
-import { Notifications } from '../../../types';
+import { App, Notifications } from '../../../types';
 import { getBookingDateTime } from '../../../util/getBookingdateAndTime';
 import { findUserById } from '../../../lib/database/findUserById';
 import { generateOrderNumber } from '../../../util/bookingHelpers/orderNumberGenerator';
 import Chat from '../../../models/Chat';
+import expo, { isExpoPushToken } from '../../../util/ExpoNotifications';
+import { checkRoom } from '../../../util/checkRoomHelper';
 
 const placeholderImage = 'https://res.cloudinary.com/dbbwuklgb/image/upload/v1753549795/placeholder_bkidl9.png';
 
@@ -226,29 +228,40 @@ export default async function(req: Request, res: Response) {
         await session.commitTransaction();
         session.endSession();
 
-        try{
-            io.to(barberId).emit(Notifications.USER_APPOINTMENT_NOTIFICATION, {
-                message: `Booking Request from ${user.name}`,
-                appointment: {
-                    _id: newBooking._id,
-                    time: bookingTime,
-                    date: bookingDate,
-                    price: price,
-                    customerName: user.name,
-                    customerId: user._id,
-                    customerImg: user.image,
-                    location: bookingLocation,
-                    tip: tip ?? 0,
-                    discount: discount ?? 0,
-                    addOns: createBooking.addOns,
-                    status: 'pending',
-                  }
-              });
+        const isOnline = checkRoom(io, String(barberId));
 
-        } catch(err) {
-            console.log("Notification failed: ", err);
+        if(barberId && isOnline) {
+          io.to(String(barberId)).emit(Notifications.USER_APPOINTMENT_NOTIFICATION, {
+              message: `Booking Request from ${user.name}`,
+              appointment: {
+                  _id: newBooking._id,
+                  time: bookingTime,
+                  date: bookingDate,
+                  price: price,
+                  customerName: user.name,
+                  customerId: user._id,
+                  customerImg: user.image,
+                  location: bookingLocation,
+                  tip: tip ?? 0,
+                  discount: discount ?? 0,
+                  addOns: createBooking.addOns,
+                  status: 'pending',
+                }
+            });
+        } else if(barber?.pushToken && isExpoPushToken(barber?.pushToken)) {
+          await expo.sendPushNotificationsAsync([
+            {
+              to: barber?.pushToken,
+              title: App.NAME,
+              subtitle: `Booking Request - $${bookingData.price.toFixed(2)} ${bookingDate} @${bookingTime}`,
+              body: `${user?.name} created a booking request. Please respond by accepting, rejecting or rescheduling this booking.`,
+              data: {
+                path: `/booking/${newBooking._id}`
+              }
+            }
+          ])
         }
-        
+       
         res.status(201).json({ newBooking, ok: true });
     } catch(err) {
         await session.abortTransaction();

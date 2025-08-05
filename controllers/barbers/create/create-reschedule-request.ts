@@ -1,8 +1,11 @@
 import { Request, Response } from 'express';
 import Booking from '../../../models/Booking';
+import User from '../../../models/Barber';
 import { io } from '../../../app';
-import { Notifications } from '../../../types';
+import { App, Notifications } from '../../../types';
 import { formatDateString, formatToAMPM } from '../../../util/getBookingdateAndTime';
+import expo, { isExpoPushToken } from '../../../util/ExpoNotifications';
+import { checkRoom } from '../../../util/checkRoomHelper';
 
 export default async function(req: Request, res: Response) {
   const { rescheduleDate, duration, bookingId } = req.body;
@@ -34,14 +37,38 @@ export default async function(req: Request, res: Response) {
     booking.rescheduleRequest = rescheduleRequest;
     booking.bookingStatus = 'reschedule';
     await booking.save();
-
-    if (booking.customerId) {
+    
+    const isOnline = checkRoom(io, String(booking.customerId))
+    if (booking.customerId && isOnline) {
       io.to(String(booking.customerId)).emit(Notifications.BOOKING_RESCHEDULE_REQUESTED, {
         message: `${booking.barberName} sent a reschedule request`,
         requestDate: `${formattedDate} at ${startTimeStr}`, // For readable display
         bookingId: booking._id,
         text2: 'Please accept or reject this offer.',
       });
+    } else {
+
+      try  {
+        const user = await User.findById(booking.customerId).select('pushToken');
+        if(user && user?.pushToken && isExpoPushToken(user?.pushToken)) {
+          await expo.sendPushNotificationsAsync([
+            {
+              to: user.pushToken,
+              title: App.NAME,
+              subtitle: `${booking.barberName} sent a reschedule request`,
+              body: `The new date would be ${formattedDate} @${startTimeStr}. Please accept or reject this offer.`,
+              data: {
+                path: `/booking/${booking._id}`
+              }
+            }
+          ])
+        } else {
+          console.log("No user push token for notification. - reschedule request")
+        }
+      } catch(err) {
+        console.log("Error finding user: ", err)
+      }
+
     }
 
     res.status(200).json({

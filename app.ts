@@ -7,11 +7,13 @@ import barberRoutes from './routes/barber/barberRoutes';
 import stripeRoutes from './routes/stripe/stripeRoutes';
 import onboardRoutes from './routes/onboardRoutes';
 import chatRoutes from './routes/chat/chatRoutes';
+import notificationRoutes from './routes/notificationRoutes'
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { setupSocket } from './sockets/socket';
 import nodeCron from 'node-cron';
 import checkBookingExpiration from './controllers/cronjobs/checkBookingExpiration';
+import handleCronJobs from './controllers/cronjobs/cronHandlers';
 
 dotenv.config();
 const app = express();
@@ -49,6 +51,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/barber", barberRoutes);
 app.use("/api/marketplace", stripeRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/notifications", notificationRoutes);
 // TODO: URI redirect address after auth
 const port = process.env.PORT || 5001;
  const MONGO_URI: string | undefined = process.env.MONGO_DB_URI;
@@ -58,14 +61,11 @@ const port = process.env.PORT || 5001;
   process.exit(1);
  }
 
- nodeCron.schedule("0 0 * * *", () => {
-  checkBookingExpiration();
- })
-
-mongoose
-.connect(MONGO_URI as string)
-.then(() => {
-  server.listen(port, () => {
-      console.log("listening on port " + port);
-  })
+ mongoose
+ .connect(MONGO_URI as string)
+ .then(() => {
+   server.listen(port, () => {
+     console.log("listening on port " + port);
+    })
+    handleCronJobs();
 }).catch((err) => console.log("Error connecting: " + err));

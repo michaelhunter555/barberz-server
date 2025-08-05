@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
 
-interface IParticipantInfo {
+export interface IParticipantInfo {
     id: mongoose.Types.ObjectId;
     name: string;
     image: string;
     role: 'user' | 'barber' | 'admin';
+    pushToken?: string;
   }
   
   export interface IChat extends mongoose.Document {
@@ -28,7 +29,8 @@ const ChatSchema = new mongoose.Schema<IChat>({
         id: { type: mongoose.Schema.Types.ObjectId, ref: 'Barber', required: true },
         name: { type: String, required: true },
         image: { type: String, required: true },
-        role: { type: String, enum: ['user', 'barber', 'admin'], required: true }
+        role: { type: String, enum: ['user', 'barber', 'admin'], required: true },
+        pushToken: { type: String, required: false }
       }
     ],
     lastMessage: { type: String },

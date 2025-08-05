@@ -113,5 +113,36 @@ export type AppointmentNotification = {
     ACCOUNT_VERIFIED = 'accountVerified',
     ACCOUNT_SUSPENDED = 'accountSuspended',
     PASSWORD_CHANGED = 'passwordChanged',
+
+    // Timing
+    APPOINTMENT_STARTS_SOON = 'appointmentNearingStartNotification',
+    APPOINTMENT_IS_LATE = 'lateStartNotification',
+
+    // payout notification
+    PAYOUT_SENT = 'payoutSentNotification'
   }
   
+export enum BookingStatus {
+COMPLETED = 'completed',
+CONFIRMED = 'confirmed',
+PENDING = 'pending',
+CANCELED = 'canceled',
+RESCHEDULE = 'reschedule',
+EXPIRED = 'expired'
+  }
+
+  export enum App  {
+    NAME = 'Barber App',
+  }
+
+  export enum AccountStatus {
+    GOOD = 'good',
+    SUSPENDED = 'suspended',
+    BANNED = 'banned',
+  }
+
+  export enum AccountType {
+    USER = 'user',
+    BARBER = 'barber',
+    ADMIN = 'admin',
+  }

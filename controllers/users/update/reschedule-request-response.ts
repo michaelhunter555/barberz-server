@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
 import Booking from '../../../models/Booking';
+import Barber from '../../../models/Barber';
 import { io } from '../../../app';
-import { Notifications } from '../../../types';
+import { App, Notifications } from '../../../types';
 import Chat from '../../../models/Chat';
 import Transaction from '../../../models/Transaction';
 import Stripe from 'stripe';
 import { getBookingDateTime } from '../../../util/getBookingdateAndTime';
+import { checkRoom } from '../../../util/checkRoomHelper';
+import expo, { isExpoPushToken } from '../../../util/ExpoNotifications';
 
 export default async function(req: Request, res: Response) {
     const { response, bookingId, rescheduleData } = req.body;
@@ -18,7 +21,7 @@ export default async function(req: Request, res: Response) {
     const { requestedDay, startTime, endTime } = rescheduleData;
 
     try {
-        const booking = await Booking.findById(bookingId);
+        const booking = await Booking.findById(bookingId) // .populate('barber');
         if(!booking) {
             return void res.status(404).json({ error: 'Could not find a booking with the given id', ok: false })
         }
@@ -54,19 +57,40 @@ export default async function(req: Request, res: Response) {
                 }
             }
         }
-        
+        const isOnline = checkRoom(io, String(booking.barberId));
         await booking.save()
-        if(String(booking.barberId)) {
+        if(String(booking.barberId) && isOnline) {
             const notification = response === 'accept' ? 
             Notifications.BOOKING_RESCHEDULE_APPROVED 
             :Notifications.BOOKING_RESCHEDULE_DECLINED;
 
             io.to(String(booking.barberId)).emit(notification, {
                 response: response,
-                message: `${booking.customerName} ${response}ed your reschedule request`,
+                message: `Reschedule request ${response}ed`,
                 bookingId: booking._id,
-                text2: `The booking is now ${response === 'accept' ? 'confirmed' : 'canceled'}`,
+                text2: `${booking.customerName} ${response}ed your reschedule request. The booking is now ${response === 'accept' ? 'confirmed' : 'canceled'}`,
             })
+        } else {
+            try {
+                const barber = await Barber.findById(booking.barberId).select('pushToken')
+                if(barber && barber?.pushToken && isExpoPushToken(barber?.pushToken)) {
+                    await expo.sendPushNotificationsAsync([
+                        {
+                            to: barber?.pushToken,
+                            title: App.NAME,
+                            subtitle: `Reschedule Request ${response}ed`,
+                            body: `${booking.customerName} ${response}ed your reschedule request. The booking is now ${response === 'accept' ? 'confirmed' : 'canceled'}`,
+                            data: {
+                                path: `/booking/${booking._id}`
+                            }
+                        }
+                    ])
+                } else {
+                    console.log(`No push token for ${barber._id}`)
+                }
+            } catch(err) {
+                console.log("Could not find the barber", err);
+            }
         }
 
         res.status(200).json({ bookingId: booking._id,  message: 'Request Sent!', ok: true })

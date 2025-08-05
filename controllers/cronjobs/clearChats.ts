@@ -11,50 +11,42 @@ export default async function cleanUpOldChats() {
   
     try {
       // Find bookings that were completed more than 3 days ago
-      const oldBookings = await Bookings.find({
+      const oldBookingIds = await Bookings.distinct('_id', {
         createdAt: { $lte: cutoffDate },
         bookingStatus: { $in: ['completed', 'expired'] },
-      });
-  
-      const oldBookingIds = oldBookings.map((b) => b._id);
-  
-      if (oldBookingIds.length === 0) {
-        console.log("Cron Complete: No old bookings found.");
+      })
+      
+      if(oldBookingIds.length === 0) {
+        console.log("Cron completed: no old chats to remove");
         return;
       }
-  
-      // Find associated transactions with full or final payments and no dispute
-      const transactions = await Transaction.find({
+      
+      const validTransactionBookingIds = await Transaction.distinct('bookingId', {
         bookingId: { $in: oldBookingIds },
         createdAt: { $lte: cutoffDate },
         hasDispute: false,
         paymentType: { $in: ['full', 'final'] },
       });
-  
-      const transactionBookingIds = transactions.map((t) => t.bookingId);
-  
-      if (transactionBookingIds.length === 0) {
+
+      if(validTransactionBookingIds.length === 0) {
         console.log("Cron Complete: No valid transactions found.");
         return;
       }
-  
-      // Find chats linked to those transactions
-      const chats = await Chat.find({
-        bookingId: { $in: transactionBookingIds },
+
+      const chatIds = await Chat.distinct('_id', {
+        bookingId: { $in: validTransactionBookingIds }
       });
-  
-      if (chats.length === 0) {
-        console.log("Cron Complete: No chats to delete.");
+
+      if(chatIds.length === 0) {
+        console.log('Cron Complete: No chats to delete');
         return;
       }
-  
-      const chatIds = chats.map((chat) => chat._id);
   
       // Delete related messages and chats
       await Message.deleteMany({ chatId: { $in: chatIds } });
       await Chat.deleteMany({ _id: { $in: chatIds } });
   
-      console.log(`Cron Complete: Deleted ${chats.length} chats and related messages.`);
+      console.log(`Cron Complete: Deleted ${chatIds.length} chats and related messages.`);
     } catch (err) {
       console.error("Cron Error:", err);
     }

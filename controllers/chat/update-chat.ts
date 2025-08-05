@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
-import Chat from '../../models/Chat';
+import Chat, { IChat, IParticipantInfo } from '../../models/Chat';
 import Message from '../../models/Message';
 import Barber from '../../models/Barber';
 import { io } from '../../app';
 import { Notifications } from '../../types';
+import { Expo } from 'expo-server-sdk';
+import expo from '../../util/ExpoNotifications';
 
 export default async function (req: Request, res: Response) {
   const { chatId, senderId, text } = req.body;
-  console.log(req.body)
 
   if (!chatId || !senderId || !text?.trim()) {
     return void res.status(400).json({
@@ -49,17 +50,27 @@ export default async function (req: Request, res: Response) {
 
     // Emit real-time notification to the other participant
     const { participantInfo } = chat;
-    const receiver = participantInfo.find((p: any) => String(p.id) !== String(sender._id));
-
-    /*
-    if (receiver?.id) {
+    const receiver = participantInfo.find((p: IParticipantInfo ) => String(p.id) !== String(sender._id));
+    
+    if (String(receiver?.id) && io.sockets.adapter.rooms.has(String(receiver?.id))) {
       io.to(String(receiver.id)).emit(Notifications.NEW_MESSAGE_FROM_USER, {
         message: `${sender.name} sent a message`,
         text,
         chatId: chat._id,
       });
+    } else if (receiver?.pushToken && Expo.isExpoPushToken(receiver?.pushToken)) {
+        await expo.sendPushNotificationsAsync([{
+          to: receiver.pushToken,
+          title: `Barber App`,
+          subtitle: `${sender.name} sent a message`,
+          body: String(text),
+          data: {
+            chatId: chat._id,
+            path: `/messages/${chat._id}/message`
+          }
+        }])
     }
-    */
+    
 
     res.status(201).json({ message, ok: true });
   } catch (err) {

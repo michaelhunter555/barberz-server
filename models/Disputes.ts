@@ -20,9 +20,13 @@ export interface IDisputes extends mongoose.Document {
     decision: 'in_favor_barber' | 'in_favor_user';
     action: 'none' | 'refund' | 'partial_refund' | 'pending';
     platformResponse: string,
+    desiredAction?: 'full_refund' | 'partial_refund' | 'strike_account',
+    requestedRefundAmount?: number;
 }
 
 const DisputeSchema = new mongoose.Schema<IDisputes>({
+    requestedRefundAmount: { type: Number, required: false, default: 0},
+    desiredAction: { type: String, required: false, enum: ['full_refund', 'partial_refund', 'strike_account'], },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'Barber', required: true },
     barberId: { type: mongoose.Schema.Types.ObjectId, ref: 'Barber', required: true },
     bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', required: true },

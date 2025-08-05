@@ -49,6 +49,7 @@ export default async function (req: Request, res: Response): Promise<void> {
       ) {
         const regex = new RegExp(search.trim(), 'i');
         geoQuery.$or = [
+          { name: regex },
           { location: regex },
           { primaryLocation: regex },
           { paymentPolicy: regex },
@@ -111,9 +112,16 @@ export default async function (req: Request, res: Response): Promise<void> {
         res.status(404).json({ error: 'No barbers matched your filters.', ok: false });
         return;
       }
+
+      const metersToMiles = (meters: number) => meters / 1609.34;
+
+      const barberWithMiles = barbers?.map((barber) => ({
+        ...barber,
+        distanceInMiles: parseInt(metersToMiles(barber.distance).toFixed(2))
+      }))
   
       res.status(200).json({
-        barbers,
+        barbers: barberWithMiles,
         currentPage: pageNum,
         totalPages: Math.ceil(totalBarbers / limitNum),
         totalBarbers,

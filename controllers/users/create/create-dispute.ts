@@ -79,16 +79,18 @@ export default async function(req: Request, res: Response) {
             barberResponse: '',
             disputeStatus: String(disputeStatus) as IDisputes['disputeStatus'],
             action: 'pending',
-            platformResponse: ''
+            platformResponse: '',
+            desiredAction: disputeData.desiredAction,
+            requestedRefundAmount: disputeData.requestedRefundAmount 
         }
 
         if(files?.imageOne?.[0]) {
-            const result = await uploadToCloudinary(files.imagesOne[0].buffer);
+            const result = await uploadToCloudinary(files.imageOne[0].buffer);
             disputeInfo.imageOne = result.secure_url;
         }
 
         if(files?.imageTwo?.[0]) {
-            const result = await uploadToCloudinary(files.imagesTwo[0].buffer);
+            const result = await uploadToCloudinary(files.imageTwo[0].buffer);
             disputeInfo.imageTwo = result.secure_url;
         }
 

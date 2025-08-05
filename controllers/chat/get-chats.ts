@@ -10,6 +10,8 @@ export default async function(req: Request, res: Response) {
     try {
         const chats = await Chat.find({
             participants: { $in: [userId] },
+            lastMessage: { $exists: true, $ne: null },
+            lastMessageTime: { $exists: true, $ne: null }
         }).skip((pageNum - 1) * limitNum)
         .limit(limitNum).sort({ updatedAt: orderNum });
 
@@ -17,7 +19,11 @@ export default async function(req: Request, res: Response) {
             return void res.status(404).json({ error: 'No chats associated with the given user id.', ok: false })
         }
 
-        const totalChats = await Chat.countDocuments({ participants: { $in: [userId]}})
+        const totalChats = await Chat.countDocuments({ 
+            participants: { $in: [userId]},
+            lastMessage: { $exists: true, $ne: null },
+            lastMessageTime: { $exists: true, $ne: null }
+        })
         const totalPages = Math.ceil(totalChats / limitNum);
 
         res.status(200).json({ 

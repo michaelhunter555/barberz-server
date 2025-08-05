@@ -1,4 +1,5 @@
 import { IBarber } from "../../models/Barber";
+import { AccountStatus } from "../../types";
 
 function checkIsBarber(user: IBarber): boolean {
 return user.accountType === "barber";
@@ -42,7 +43,10 @@ if(checkIsBarber(user)) {
             stripeCustomerId: user.stripeCustomerId ?? "",
             stripeDefaultPaymentMethodId: user.stripeDefaultPaymentMethodId,
             myFavorites: user.myFavorites ?? [],
-            rewardPoints: user.rewardPoints
+            rewardPoints: user.rewardPoints,
+            accountStrikes: user?.accountStrikes ?? 0,
+            accountStatus: user?.accountStatus,
+            barberDebt: user?.barberDebt ?? 0,
         }
 }
 return {
@@ -63,5 +67,7 @@ return {
     myFavorites: user.myFavorites ?? [],
     rewardPoints: user.rewardPoints,
     clientLocation: user.clientLocation,
+    accountStrikes: user?.accountStrikes ?? 0,
+    accountStatus: user?.accountStatus,
 }
 }

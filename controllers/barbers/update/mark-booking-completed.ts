@@ -2,11 +2,13 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import Booking from '../../../models/Booking';
 import { io } from '../../../app';
-import { Notifications } from '../../../types';
+import { App, Notifications } from '../../../types';
 import Barber from '../../../models/Barber';
 import Stripe from 'stripe';
 import Transaction from '../../../models/Transaction';
 import Chat from '../../../models/Chat';
+import { checkRoom } from '../../../util/checkRoomHelper';
+import expo, { isExpoPushToken } from '../../../util/ExpoNotifications';
 
 export default async function(req: Request, res: Response) {
     const { bookingId } = req.query;
@@ -95,27 +97,30 @@ export default async function(req: Request, res: Response) {
             user.rewardPoints = user.rewardPoints += rewardPoints;
           
             await transaction.save({ session });
+            await user.save({ session })
           }
 
         booking.barberIsComplete = true;
         booking.barberCompleteTime = new Date();
         booking.bookingStatus = 'completed';
         booking.remainingAmount = 0;
-
        
         const chat = await Chat.findOne({
             bookingId: booking._id,
-        })
-        chat.chatIsComplete = true;
+        });
         
+        chat.chatIsComplete = true;
+
         await chat.save({ session });
         await booking.save({ session });
         await barber.save({ session });
 
         await session.commitTransaction();
         session.endSession();
+
+        const isOnline = checkRoom(io, String(booking.customerId));
     
-        if(booking.customerId){
+        if(booking.customerId && isOnline){
             io.to(String(booking.customerId)).emit(Notifications.BARBER_COMPLETED_APPOINTMENT, {
                 completeTime: booking.barberCompleteTime.toLocaleString('en-US', {
                     weekday: 'short',
@@ -128,6 +133,18 @@ export default async function(req: Request, res: Response) {
                 }),
                 message: `${booking.barberName} completed your appointment.`,
             })
+        } else if(user && user?.pushToken && isExpoPushToken(user?.pushToken)) {
+          await expo.sendPushNotificationsAsync([
+            {
+              to: user.pushToken,
+              title: App.NAME,
+              subtitle: `${booking.bookingNumber} completed.`,
+              body: `${booking.barberName} has marked your booking as completed. Let us now how you feel by giving a review.`,
+              data: {
+                path: `/booking/${booking._id}`
+              }
+            }
+          ])
         }
 
         res.status(200).json({ message: 'Successfully updated booking as completed.', ok: true })

@@ -26,7 +26,16 @@ export default async function( req: Request, res: Response) {
                 stripe_dashboard: {
                     type: 'express',
                 },
+                requirement_collection: 'stripe'
             },
+            settings: {
+                payouts: {
+                    debit_negative_balances: true,
+                    schedule: {
+                        interval: 'manual',
+                    }
+                }
+            }
         });
 
         let accountLink: Stripe.AccountLink | {} = {};
