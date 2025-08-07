@@ -7,12 +7,16 @@ export interface ITransaction extends mongoose.Document {
   barberId: mongoose.Types.ObjectId;
   stripePaymentIntentId: string;
   stripeCustomerId: string;
-  chargeId?: string;
   amountCharged: number;
   amountPaid: number;
   amountRemaining: number;
+  // deposit is 1/2 with halfnow
+  // typeof payment 'final' is for onCompletion and 2/2 of halfnow
+  // full is payInFull
   paymentType: 'deposit' | 'final' | 'full' | 'refund';
   billingReason: string;
+  paymentStatus?: 'succeeded' | 'failed' | 'canceled' | 'pending';
+  chargeId?: string;
   currency?: string;
   invoiceUrl?: string;
   couponId?: mongoose.Schema.Types.ObjectId;
@@ -38,6 +42,7 @@ const TransactionSchema = new mongoose.Schema<ITransaction>({
   amountPaid: { type: Number, required: true },
   amountRemaining: { type: Number, required: false, default: 0 },
   paymentType: { type: String, enum: ['deposit', 'final', 'full', 'refund'], required: true },
+  paymentStatus: { type: String, enum: ['succeeded', 'failed', 'canceled', 'pending'], required: false},
   billingReason: { type: String, required: false, default: "" },
   currency: { type: String, required: false, default: "usd" },
   invoiceUrl: { type: String, required: false, default: "" },

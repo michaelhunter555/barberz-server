@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Mongoose } from 'mongoose';
 import { TService } from './Services';
 
 
@@ -45,19 +45,23 @@ export interface IBookings extends mongoose.Document {
         startTime: string;
         endTime: string; 
     };
+    transactionId?: mongoose.Types.ObjectId;
+    transactionId2?: mongoose.Types.ObjectId;
 };
 
 const BookingSchema = new mongoose.Schema<IBookings>({
     bookingNumber: { type: String, required: true, },
+    transactionId: { type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Transaction'},
+    transactionId2: { type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Transaction'},
     chatId: { type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Chat' },
     customerId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Barbers", // or "Barbers" if both are barbers
+        ref: "Barber", // or "Barbers" if both are barbers
         required: true,
     },
     barberId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Barbers",
+        ref: "Barber",
         required: true,
     },
     proofOfCompletionImg: { type: String, required: false},

@@ -9,13 +9,23 @@ const handleCronJobs = () => {
     nodeCron.schedule("0 0 * * *", () => {
      checkBookingExpiration();
      cleanUpOldChats();
-     initiatePayout();
-    });
+     
+     const today = new Date();
+     if(today.getDate() % 2 === 0) {
+         initiatePayout();
+
+     }
+    }, {
+        timezone: "America/New_York"
+      });
+
 
     // notify appointments starting soon
     nodeCron.schedule("*/5 * * * *", () => {
      appointmentNearNotification();
-    });
+    }, {
+        timezone: "America/New_York"
+      });
 };
 
 export default handleCronJobs;

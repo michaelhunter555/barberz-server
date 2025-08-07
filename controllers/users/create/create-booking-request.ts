@@ -53,15 +53,17 @@ export default async function(req: Request, res: Response) {
       try {
           const user = await findUserById(String(userId), res);
           const barber = await findUserById(String(barberId), res);
+          
           if(!user) {
               return void res.status(404).json({ error: 'User not found.', ok: false })
             }
-            if(!barber) {
-                return void res.status(404).json({ error: 'barber not found.', ok: false })
-            }
+          if(!barber) {
+              return void res.status(404).json({ error: 'barber not found.', ok: false })
+          }
             
 
         const bookingDateAndTime = getBookingDateTime(bookingDate, bookingTime);
+        const bookingNumber = generateOrderNumber(String(user?._id));
         if (!bookingDateAndTime) {
         return void res.status(400).json({ error: 'Invalid booking date/time', ok: false });
         }
@@ -94,10 +96,56 @@ export default async function(req: Request, res: Response) {
         const platformCut = baseAmount * fraction * platformFee;
         const applicationFee = Math.floor(recordedServiceFee * 100 + platformCut);
 
-        let paymentIntentId: string | null = null;
-        let chargeId: string | null = null;
+        const createBooking: Partial<IBookings> = {
+          bookingNumber,
+          customerId: userId,
+          customerName: user?.name,
+          customerImg: user?.image,
+          barberImg: barber?.image,
+          barberId,
+          serviceFee: Number(serviceFee ?? 0),
+          barberName: barber?.name,
+          bookingDate: bookingDate,
+          bookingTime: bookingTime,
+          bookingDateAndTime,
+          bookingLocation: bookingLocation,
+          isConfirmed: false,
+          addOns: Array.isArray(addOns) ? 
+          addOns.filter(
+              (a): a is TService =>
+                typeof a.name === 'string' &&
+                typeof a.description === 'string' &&
+                typeof a.price === 'number'
+            ) : [],
+          discount: discount,
+          price: price,
+          tip: tip ?? 0,
+          platformFee: platformFee,
+          barberIsStarted: false,
+          barberStartTime: "",
+          barberIsComplete: false,
+          barberCompleteTime: "",
+          customerConfirmComplete: false,
+          bookingStatus: 'pending',
+          paymentType: barber?.paymentPolicy ?? "onCompletion",
+          cancelFee: barber?.cancelFee ?? 0,
+          cancelFeeType: barber?.cancelFeeType ?? "number",
+          // initialPaymentIntentId: paymentIntentId ?? "", // <-- update this
+          remainingAmount: barber.paymentPolicy === 'halfNow' || barber.paymentPolicy === 'onCompletion' 
+            ? remainingAmount 
+            : 0
+      }
+        const newBooking = new Booking(createBooking);
+
+        const transaction = {
+          amountCharged: serviceAmount, // barber charge
+          amountRemaining: remainingAmount,
+          paymentType: barber.paymentPolicy === 'payInFull' ? 'full': 'deposit',
+          couponId: mongoose.Types.ObjectId.isValid(discountId) ? discountId : undefined,
+          couponApplied: !!discountId,
+      }
         if (initialChargeAmount > 0) {
-            const paymentIntent = await stripe.paymentIntents.create({
+             await stripe.paymentIntents.create({
               amount: initialChargeAmount,
               currency: 'usd',
               customer: user.stripeCustomerId,
@@ -106,8 +154,11 @@ export default async function(req: Request, res: Response) {
               capture_method: 'manual',
               confirm: true,
               metadata: {
+                bookingId: String(newBooking._id),
+                transaction: JSON.stringify(transaction),
                 userId,
                 barberId,
+                bookingNumber,
                 policy: String(barber.paymentPolicy),
                 tip: String(tip ?? 0),
                 serviceFee: recordedServiceFee,
@@ -118,119 +169,42 @@ export default async function(req: Request, res: Response) {
               },
               expand: ['latest_charge']
             });
-          
-            paymentIntentId = paymentIntent.id;
-            chargeId = typeof paymentIntent.latest_charge === 'string' ? paymentIntent.latest_charge : "";
-          }
-
-        const bookingNumber = generateOrderNumber(String(user?._id));
-
-        const createBooking: Partial<IBookings> = {
-            bookingNumber,
-            customerId: userId,
-            customerName: user?.name,
-            customerImg: user?.image,
-            barberImg: barber?.image,
-            barberId,
-            serviceFee: Number(serviceFee ?? 0),
-            barberName: barber?.name,
-            bookingDate: bookingDate,
-            bookingTime: bookingTime,
-            bookingDateAndTime,
-            bookingLocation: bookingLocation,
-            isConfirmed: false,
-            addOns: Array.isArray(addOns) ? 
-            addOns.filter(
-                (a): a is TService =>
-                  typeof a.name === 'string' &&
-                  typeof a.description === 'string' &&
-                  typeof a.price === 'number'
-              ) : [],
-            discount: discount,
-            price: price,
-            tip: tip ?? 0,
-            platformFee: platformFee,
-            barberIsStarted: false,
-            barberStartTime: "",
-            barberIsComplete: false,
-            barberCompleteTime: "",
-            customerConfirmComplete: false,
-            bookingStatus: 'pending',
-            paymentType: barber?.paymentPolicy ?? "onCompletion",
-            cancelFee: barber?.cancelFee ?? 0,
-            cancelFeeType: barber?.cancelFeeType ?? "number",
-            initialPaymentIntentId: paymentIntentId ?? "",
-            remainingAmount: barber.paymentPolicy === 'halfNow' || barber.paymentPolicy === 'onCompletion' 
-              ? remainingAmount 
-              : 0
-        }
+           }
 
         if (discountId && mongoose.Types.ObjectId.isValid(discountId)) {
             createBooking.discountId = discountId;
           }
 
-        const newBooking = new Booking(createBooking);
+          const chat = new Chat({
+            bookingId: newBooking._id,
+            participants: [barber._id, user._id],
+            participantInfo: [{
+              id: user._id,
+              name: user?.name,
+              image: user?.image ?? placeholderImage,
+              role: 'user',
+            },
+            {
+              id: barber._id,
+              name: barber?.name,
+              image: barber?.image ?? placeholderImage,
+              role: 'barber',
+            }
+          ],
+          createdAt: new Date(),
+        });
+        await chat.save({ session });
+  
+        newBooking.chatId = chat._id;
 
-        if (initialChargeAmount > 0 && paymentIntentId) {
-            const transaction = new Transaction({
-                bookingNumber,
-                bookingId: newBooking._id,
-                serviceFee: recordedServiceFee,
-                userId: user._id,
-                barberId: barber._id,
-                amountCharged: serviceAmount, // barber charge
-                amountPaid: initialChargeAmount,
-                amountRemaining: remainingAmount,
-                paymentType: barber.paymentPolicy === 'payInFull' ? 'full': 'deposit',
-                billingReason: 'Provider Pre-booking requirement',
-                currency: 'usd',
-                couponId: mongoose.Types.ObjectId.isValid(discountId) ? discountId : undefined,
-                couponApplied: !!discountId,
-                stripePaymentIntentId: paymentIntentId,
-                stripeCustomerId: user.stripeCustomerId,
-                chargeId: chargeId,
-            })
-
-            await transaction.save({ session });
-        }
-
-        const chat = new Chat({
-          bookingId: newBooking._id,
-          participants: [barber._id, user._id],
-          participantInfo: [{
-            id: user._id,
-            name: user?.name,
-            image: user?.image ?? placeholderImage,
-            role: 'user',
-          },
-          {
-            id: barber._id,
-            name: barber?.name,
-            image: barber?.image ?? placeholderImage,
-            role: 'barber',
-          }
-        ],
-        createdAt: new Date(),
-      });
-      await chat.save({ session });
-
-      newBooking.chatId = chat._id;
       await newBooking.save({ session })
-
-        barber.requestedBooking = Number(barber?.requestedBooking ?? 0) + 1;
-        barber.customerBookings?.push(newBooking._id);
-        user.myBookings?.push(newBooking._id);
-        user.userHasActiveBooking = !user.userHasActiveBooking;
-        
-        await barber.save({ session });
-        await user.save({ session });
-
-        await session.commitTransaction();
+      await session.commitTransaction();
         session.endSession();
 
+      // only onCompletion Notifications  
+      const isOnCompletion = barber?.paymentPolicy === 'onCompletion'
         const isOnline = checkRoom(io, String(barberId));
-
-        if(barberId && isOnline) {
+        if(barberId && isOnline && isOnCompletion ) {
           io.to(String(barberId)).emit(Notifications.USER_APPOINTMENT_NOTIFICATION, {
               message: `Booking Request from ${user.name}`,
               appointment: {
@@ -239,16 +213,9 @@ export default async function(req: Request, res: Response) {
                   date: bookingDate,
                   price: price,
                   customerName: user.name,
-                  customerId: user._id,
-                  customerImg: user.image,
-                  location: bookingLocation,
-                  tip: tip ?? 0,
-                  discount: discount ?? 0,
-                  addOns: createBooking.addOns,
-                  status: 'pending',
                 }
             });
-        } else if(barber?.pushToken && isExpoPushToken(barber?.pushToken)) {
+        } else if(isOnCompletion && barber?.pushToken && isExpoPushToken(barber?.pushToken)) {
           await expo.sendPushNotificationsAsync([
             {
               to: barber?.pushToken,

@@ -119,7 +119,11 @@ export type AppointmentNotification = {
     APPOINTMENT_IS_LATE = 'lateStartNotification',
 
     // payout notification
-    PAYOUT_SENT = 'payoutSentNotification'
+    PAYOUT_SENT = 'payoutSentNotification',
+
+    //Setup Intents
+    SETUP_INTENT_SUCCEEDED = 'setupIntentSucceededNotification',
+
   }
   
 export enum BookingStatus {
@@ -145,4 +149,16 @@ EXPIRED = 'expired'
     USER = 'user',
     BARBER = 'barber',
     ADMIN = 'admin',
+  }
+
+  export enum Payment {
+    SUCCEEDED = 'succeeded',
+    FAILED = 'failed',
+    CANCELED = 'canceled',
+  }
+
+  export enum BookingPolicy {
+    ON_COMPLETION ='onCompletion',
+    HALF_NOW = 'halfNow',
+    PAY_IN_FULL = 'payInFull'
   }

@@ -16,7 +16,7 @@ export interface IDisputes extends mongoose.Document {
     imageOne: string;
     imageTwo: string;
     category: 'no_show' | 'service_not_provided' | 'unsafe_environment' | 'client_behavoir' | 'barber_behavoir' | 'incorrect_charge_amount';
-    disputeStatus: 'awaiting_barber_response' |'in_review' | 'awaiting_user_response';
+    disputeStatus: 'awaiting_barber_response' |'in_review' | 'awaiting_user_response' | 'closed';
     decision: 'in_favor_barber' | 'in_favor_user';
     action: 'none' | 'refund' | 'partial_refund' | 'pending';
     platformResponse: string,
@@ -49,7 +49,7 @@ const DisputeSchema = new mongoose.Schema<IDisputes>({
     },
     disputeStatus: {
       type: String,
-      enum: ['awaiting_barber_response', 'in_review', 'awaiting_user_response'],
+      enum: ['awaiting_barber_response', 'in_review', 'awaiting_user_response', 'closed'],
       default: 'in_review',
     },
     decision: {

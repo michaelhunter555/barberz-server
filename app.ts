@@ -40,7 +40,7 @@ app.use('/socket.io', (req, res, next) => next());
 
 app.use(cors());
 app.use((req, res, next) => {
-  if (req.originalUrl === "/api/plans/stripe-webhook") {
+  if (req.originalUrl === "/api/marketplace/stripe-webhook") {
     next();
   } else {
     express.json()(req, res, next);
